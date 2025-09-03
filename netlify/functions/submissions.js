@@ -1,76 +1,113 @@
-// Netlify Function: submissions (A:H)
+// netlify/functions/submissions.js
 const { google } = require('googleapis');
-const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
-const SHEET_ID = process.env.GOOGLE_SHEETS_ID;
-const RANGE_WRITE = process.env.GOOGLE_SHEETS_RANGE || 'Sheet1!A:H';
-const RANGE_READ  = process.env.GOOGLE_SHEETS_GET_RANGE || 'Sheet1!A2:H';
 
-function sheetsClient() {
-  const { google } = require('googleapis');
+const SHEET_TAB = process.env.GOOGLE_SHEETS_TAB || 'Submissions';
 
-// make Sheets client
-const auth = new google.auth.JWT({
-  email: (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim(),
-  // 👇 THIS is the important bit: turn "\n" into real newlines
-  key: (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n').trim(),
-  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-});
+// Build a Sheets client and normalize the private key
+function getSheets() {
+  const email = (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim();
+  let key = process.env.GOOGLE_PRIVATE_KEY || '';
 
-const sheets = google.sheets({ version: 'v4', auth });
+  if (!email || !key) {
+    throw new Error('Missing GOOGLE_SERVICE_ACCOUNT_EMAIL or GOOGLE_PRIVATE_KEY');
+  }
 
+  // If someone pasted whole JSON by accident, extract private_key
+  try {
+    if (key.trim().startsWith('{') && key.includes('"private_key"')) {
+      const parsed = JSON.parse(key);
+      key = parsed.private_key || key;
+    }
+  } catch (_) { /* ignore */ }
+
+  // Strip accidental wrapping quotes
+  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1);
+  }
+
+  // Convert "\n" to real newlines and tidy
+  key = key.replace(/\\n/g, '\n').replace(/\r\n/g, '\n').trim();
+
+  if (!/BEGIN (RSA )?PRIVATE KEY/.test(key)) {
+    throw new Error('GOOGLE_PRIVATE_KEY looks malformed after normalization');
+  }
+
+  const auth = new google.auth.JWT({
+    email,
+    key,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
+
+  return google.sheets({ version: 'v4', auth });
+}
+
+// Small helper for CORS
+function respond(status, body = {}) {
+  return {
+    statusCode: status,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'POST,OPTIONS',
+    },
+    body: JSON.stringify(body),
+  };
+}
 
 exports.handler = async (event) => {
-  const sheets = sheetsClient();
-  const cors = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
-  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: cors, body: '' };
+  if (event.httpMethod === 'OPTIONS') return respond(200);
+  if (event.httpMethod !== 'POST') return respond(405, { error: 'Method not allowed' });
+
+  let payload = {};
+  try {
+    payload = JSON.parse(event.body || '{}');
+  } catch (e) {
+    return respond(400, { error: 'Bad JSON' });
+  }
+
+  const {
+    date,
+    housekeeper,
+    shift,
+    completed = [],
+    incomplete = [],
+    totalTasks,
+    completedCount,
+  } = payload;
+
+  const nowISO = new Date().toISOString();
+  const d = date || nowISO.slice(0, 10);
+  const compCount = (typeof completedCount === 'number')
+    ? completedCount
+    : (Array.isArray(completed) ? completed.length : 0);
+  const total = (typeof totalTasks === 'number')
+    ? totalTasks
+    : compCount + (Array.isArray(incomplete) ? incomplete.length : 0);
+  const rate = total ? compCount / total : '';
+
+  const row = [
+    d,
+    housekeeper || '',
+    shift || '',
+    compCount,
+    total,
+    rate,
+    nowISO,
+    JSON.stringify(completed),
+    JSON.stringify(incomplete),
+  ];
 
   try {
-    if (event.httpMethod === 'POST') {
-      const b = JSON.parse(event.body || '{}');
-      const row = [
-        b.date || '',
-        b.housekeeper || '',
-        b.shift || '',
-        b.completedCount ?? '',
-        b.totalTasks ?? '',
-        b.completionRate ?? '',
-        b.submittedAt || new Date().toISOString(),
-        b.incompleteList || ''
-      ];
-      await sheets.spreadsheets.values.append({
-        spreadsheetId: SHEET_ID,
-        range: RANGE_WRITE,
-        valueInputOption: 'USER_ENTERED',
-        requestBody: { values: [row] },
-      });
-      return { statusCode: 200, headers: cors, body: JSON.stringify({ ok: true }) };
-    }
-
-    if (event.httpMethod === 'GET') {
-      const resp = await sheets.spreadsheets.values.get({
-        spreadsheetId: SHEET_ID,
-        range: RANGE_READ,
-      });
-      const values = resp.data.values || [];
-      const submissions = values.map(r => ({
-        date: r[0] || '',
-        housekeeper: r[1] || '',
-        shift: r[2] || '',
-        completedCount: r[3] ? Number(r[3]) : 0,
-        totalTasks: r[4] ? Number(r[4]) : 0,
-        completionRate: r[5] ? Number(r[5]) : 0,
-        submittedAt: r[6] || '',
-        incompleteList: r[7] || ''
-      }));
-      return { statusCode: 200, headers: cors, body: JSON.stringify({ submissions }) };
-    }
-
-    return { statusCode: 405, headers: cors, body: 'Method Not Allowed' };
+    const sheets = getSheets();
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: process.env.GOOGLE_SHEETS_ID,
+      range: `${SHEET_TAB}!A1`,
+      valueInputOption: 'RAW',
+      insertDataOption: 'INSERT_ROWS',
+      requestBody: { values: [row] },
+    });
+    return respond(200, { ok: true });
   } catch (err) {
-    return { statusCode: 500, headers: cors, body: JSON.stringify({ error: String(err) }) };
+    return respond(500, { error: String(err.message || err) });
   }
 };
