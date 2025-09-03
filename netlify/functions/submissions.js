@@ -6,14 +6,18 @@ const RANGE_WRITE = process.env.GOOGLE_SHEETS_RANGE || 'Sheet1!A:H';
 const RANGE_READ  = process.env.GOOGLE_SHEETS_GET_RANGE || 'Sheet1!A2:H';
 
 function sheetsClient() {
-  const auth = new google.auth.JWT(
-    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    null,
-    (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
-    SCOPES
-  );
-  return google.sheets({ version: 'v4', auth });
-}
+  const { google } = require('googleapis');
+
+// make Sheets client
+const auth = new google.auth.JWT({
+  email: (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim(),
+  // 👇 THIS is the important bit: turn "\n" into real newlines
+  key: (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n').trim(),
+  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+});
+
+const sheets = google.sheets({ version: 'v4', auth });
+
 
 exports.handler = async (event) => {
   const sheets = sheetsClient();
