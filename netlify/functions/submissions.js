@@ -81,7 +81,7 @@ exports.handler = async (event) => {
     completedCount
   } = payload;
 
-  const nowISO = new Date().toISOString();
+    const nowISO = new Date().toISOString();
   const d = date || nowISO.slice(0, 10);
 
   const compCount = (typeof completedCount === 'number')
@@ -92,19 +92,22 @@ exports.handler = async (event) => {
     ? totalTasks
     : compCount + (Array.isArray(incomplete) ? incomplete.length : 0);
 
+  // numeric 0..1 (Sheets shows as % because the column is formatted)
   const rate = total ? compCount / total : '';
 
-  // One row for the sheet
+  // pretty multi-line string for the sheet
+  const incompleteStr = Array.isArray(incomplete) ? incomplete.join('\n') : '';
+
+  // 8 columns matching the new header
   const row = [
-    d,
-    housekeeper || '',
-    shift || '',
-    compCount,
-    total,
-    rate,
-    nowISO,
-    JSON.stringify(completed),
-    JSON.stringify(incomplete)
+    d,                    // A: Date
+    housekeeper || '',    // B: Housekeeper
+    shift || '',          // C: Shift
+    compCount,            // D: Completed Tasks
+    total,                // E: Total Tasks
+    rate,                 // F: Completion Rate (0..1)
+    nowISO,               // G: Submitted At
+    incompleteStr         // H: Incomplete List
   ];
 
   try {
