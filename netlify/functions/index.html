@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>140 W 11th — Housekeeping Task Tracker 2025</title>
+<style>
+  :root{
+    --bg1:#5b67d1;
+    --bg2:#3c3b91;
+    --panel:#f5f7fb;
+    --ink:#0f172a;
+    --muted:#6b7280;
+    --brand:#2f7be1;
+    --good:#22c55e;
+    --bad:#ef4444;
+    --ring:#cbd5e1;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    color:var(--ink);
+    background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;
+    min-height:100vh;
+  }
+  .wrap{max-width:980px;margin:24px auto;padding:0 16px}
+  .card{background:var(--panel);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.12);overflow:hidden}
+  .head{
+    background:#243447;
+    color:white;
+    padding:18px 22px;
+    text-align:center;
+  }
+  h1{margin:0;font-size:32px;line-height:1.2}
+  .sub{opacity:.85;font-size:13px;margin-top:4px}
+  .tabs{display:flex;gap:8px;justify-content:center;padding:12px;background:#eef2ff}
+  .tab{appearance:none;border:0;background:#dbeafe;color:#0f172a;padding:9px 14px;border-radius:999px;cursor:pointer;font-weight:600}
+  .tab.active{background:white;box-shadow:0 1px 0 rgba(0,0,0,.03);}
+  .pad{padding:18px 22px 24px}
+  .legend{background:#eaf2fb;border-radius:10px;padding:12px 14px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+  .dot{width:12px;height:12px;border-radius:999px;display:inline-block;margin-right:6px;border:2px solid #111827}
+  label{font-weight:600;font-size:14px;margin-bottom:6px;display:block}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media (max-width:800px){.grid{grid-template-columns:1fr}}
+  select,input[type="date"]{
+    width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--ring);background:white;
+    font-size:14px;outline:none;
+  }
+  select:focus,input[type="date"]:focus{border-color:var(--brand); box-shadow:0 0 0 3px rgba(47,123,225,.2)}
+  .hint{color:var(--muted);font-size:13px;margin-top:8px;text-align:center}
+  .tasks{margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+  .task{display:flex;gap:10px;align-items:flex-start;background:white;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
+  .row{display:flex;gap:10px;justify-content:center;margin-top:12px}
+  .btn{appearance:none;border:0;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:700}
+  .btn.ok{background:var(--good);color:white}
+  .btn.bad{background:var(--bad);color:white}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:14px}
+  .muted{color:var(--muted)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <h1>140 W 11th</h1>
+        <div class="sub">CHESTERMAN GROUP CORP — Housekeeping Task Tracker 2025</div>
+      </div>
+
+      <div class="tabs">
+        <button id="tabForm" class="tab active">Housekeeper Form</button>
+        <button id="tabMgr" class="tab">Manager Dashboard</button>
+      </div>
+
+      <section id="form" class="pad">
+        <div class="legend" id="legend"></div>
+
+        <div class="grid">
+          <div>
+            <label for="housekeeper">Housekeeper Name:</label>
+            <select id="housekeeper">
+              <option value="">Select Housekeeper</option>
+            </select>
+          </div>
+          <div>
+            <label for="shift">Shift:</label>
+            <select id="shift">
+              <option value="">Select Shift</option>
+            </select>
+          </div>
+          <div>
+            <label for="date">Date:</label>
+            <input id="date" type="date" />
+          </div>
+        </div>
+
+        <div class="hint" id="hint">Please select a shift to see the tasks</div>
+        <div id="tasks" class="tasks"></div>
+
+        <div class="row">
+          <button id="submitBtn" class="btn ok">Submit Daily Tasks</button>
+          <button id="clearBtn" class="btn bad">Clear checks</button>
+        </div>
+      </section>
+
+      <section id="mgr" class="pad" style="display:none">
+        <div class="grid">
+          <div>
+            <label>Filter by housekeeper</label>
+            <select id="fHousekeeper">
+              <option value="">All</option>
+            </select>
+          </div>
+          <div>
+            <label>Filter by shift</label>
+            <select id="fShift">
+              <option value="">All</option>
+            </select>
+          </div>
+          <div>
+            <label>Date</label>
+            <input type="date" id="fDate" />
+          </div>
+        </div>
+
+        <div class="row">
+          <button id="refreshBtn" class="btn">Refresh</button>
+          <button id="exportBtn" class="btn" style="background:#2f7be1;color:white">Export All (CSV)</button>
+        </div>
+
+        <div style="margin-top:12px">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th><th>Housekeeper</th><th>Shift</th>
+                <th>Completed</th><th>Total</th><th>Completion</th>
+                <th>Submitted</th><th>Incomplete list</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script>
+// === Config (edit here if needed) ===
+const API = "/.netlify/functions/submissions";
+
+const HOUSEKEEPERS = ["JACKY","KUNGA","LORENA","HEIDI","ANA","IRMA","AGNES","ANITA","MARIA"];
+const COLORS = {
+  JACKY:"#E74C3C",
+  KUNGA:"#22C55E",
+  LORENA:"#3B82F6",
+  HEIDI:"#A78BFA",
+  ANA:"#F59E0B",
+  IRMA:"#EC4899",
+  AGNES:"#374151",
+  ANITA:"#14B8A6",
+  MARIA:"#FF6B6B"
+};
+
+const SHIFTS = [
+  { value:"Morning", label:"Morning Shift — 7:30 am" },
+  { value:"Middle",  label:"Middle Shift — 10:30/11:00 am" },
+  { value:"Evening", label:"Evening Shift — 12:00 pm" }
+];
+
+const EXTRA = "Clean , organize Caddy and make sure all cleaning tools are put back in right places and handheld vacuum filter is clean and in place.";
+
+const SHIFT_TASKS = {
+  Morning: [
+    "Turn lights on (or off exteriors)",
+    "Check Mrs. Office; fresh water in Owala stainless steel bottle",
+    "Set the table for kids’ breakfast",
+    "Empty dishwashers",
+    "Walk the dogs then feed",
+    "Check dining room from night prior",
+    "Do a quick quiet walk through the house to clean anything from the day before",
+    "Flowers → Add water or change (task for 2 people)",
+    "Assist with family breakfast and any additional needs",
+    "Clean up after breakfast",
+    "Receive and display packages",
+    "Check bathroom on kitchen floor",
+    "Clean Oli's room/bathroom",
+    "Clean Frankie's room/bathroom",
+    "Clean Sonnet's room → if available, if not falls on evening shift",
+    "Collect laundry → bring to laundry room",
+    "Clean Master if available, if not falls to middle shift",
+    "Clean kids’ lounge/snug room",
+    "Clean kids’ 3rd floor hallways",
+    "Clean kids’ room; organize closets",
+    EXTRA
+  ],
+  Middle: [
+    "Set up kitchen for kids lunch (clean after)",
+    "Assist with cleaning Master or any rooms need attention",
+    "Assist with any packages or deliveries",
+    "Clean Master level hallway",
+    "Clean Sauna room/4th floor",
+    "Clean playroom if available",
+    "Clean 4th floor hallway",
+    "Clean 4th floor powder room → check all of them",
+    "Clean gym room; disinfect, organize",
+    "Assist with family lunch",
+    "Clean Mr. Stewart’s office",
+    "Collect kitchen garbage",
+    "Sweep outside every morning",
+    "Clean garden; blow leaves",
+    "Clean and organize furniture by the garden; cover it all if raining",
+    "Walk the dogs (Saturday or Sunday)",
+    "Clean bathroom on kitchen floor",
+    "Help put away laundry when ready",
+    "Change water for dogs",
+    EXTRA
+  ],
+  Evening: [
+    "Ensure lights are on their evening setting around 5:30/6pm",
+    "Clean parlor level hallway",
+    "Clean dining room",
+    "Clean living room",
+    "Clean pantry and stairways on parlor level",
+    "Clean 138 entryway",
+    "Clean parlor level powder room",
+    "Clean balcony if needed",
+    "Turn down the kids’ rooms after nap (usually after 4pm)",
+    "Turn down, clean & refresh all bathrooms",
+    "Set dinner table for kids",
+    "Assist with family dinner",
+    "Clean guest room on kitchen floor",
+    "Feed cat and dogs",
+    "Walk dogs",
+    "Collect garbage (collect g. on sheet for sign days)",
+    "Bring clean laundry to the rooms",
+    "Check laundry room to ensure nothing is left",
+    "Refill fridge and ensure drinks are fully stocked",
+    "Empty cat/dog kitchen soup tray",
+    "Clean kitchen, pantry and mudroom for the day",
+    "Clear family room & check guest room apartment",
+    "Dispose of all garbage (Tuesday: trash and large items. Thursday: trash, recycling, composting. Saturday: trash and large items)",
+    EXTRA
+  ]
+};
+
+// === DOM
+const els = {
+  tabForm: document.getElementById('tabForm'),
+  tabMgr: document.getElementById('tabMgr'),
+  viewForm: document.getElementById('form'),
+  viewMgr: document.getElementById('mgr'),
+  legend: document.getElementById('legend'),
+  housekeeper: document.getElementById('housekeeper'),
+  shift: document.getElementById('shift'),
+  date: document.getElementById('date'),
+  tasks: document.getElementById('tasks'),
+  hint: document.getElementById('hint'),
+  submitBtn: document.getElementById('submitBtn'),
+  clearBtn: document.getElementById('clearBtn'),
+  fHousekeeper: document.getElementById('fHousekeeper'),
+  fShift: document.getElementById('fShift'),
+  fDate: document.getElementById('fDate'),
+  rows: document.getElementById('rows'),
+  exportBtn: document.getElementById('exportBtn'),
+  refreshBtn: document.getElementById('refreshBtn')
+};
+
+// Tabs
+els.tabForm.onclick = () => { els.tabForm.classList.add('active'); els.tabMgr.classList.remove('active'); els.viewForm.style.display='block'; els.viewMgr.style.display='none'; };
+els.tabMgr.onclick = () => { els.tabMgr.classList.add('active'); els.tabForm.classList.remove('active'); els.viewForm.style.display='none'; els.viewMgr.style.display='block'; fetchAndRender(); };
+
+// Init selects + legend
+function addOption(sel, value, label){ const o=document.createElement('option'); o.value=value; o.textContent=label||value; sel.appendChild(o); }
+
+HOUSEKEEPERS.forEach(name=>{
+  addOption(els.housekeeper, name, name);
+  addOption(els.fHousekeeper, name, name);
+  const tag = document.createElement('div');
+  tag.innerHTML = `<span class="dot" style="background:${COLORS[name]||'#888'}"></span>${name}`;
+  els.legend.appendChild(tag);
+});
+
+SHIFTS.forEach(s=>{ addOption(els.shift, s.value, s.label); addOption(els.fShift, s.value, s.label); });
+
+// Default date = today
+els.date.valueAsNumber = Date.now() - (new Date().getTimezoneOffset()*60000);
+
+// Render tasks after choosing a shift
+function renderTasks(){
+  const s = els.shift.value;
+  els.tasks.innerHTML = '';
+  if(!s){ els.hint.textContent = "Please select a shift to see the tasks"; return; }
+  const list = SHIFT_TASKS[s] || [];
+  els.hint.textContent = `Tasks (${list.length})`;
+  list.forEach((t,i)=>{
+    const row = document.createElement('label');
+    row.className = 'task';
+    row.innerHTML = `<input type="checkbox" data-i="${i}"/> <span>${t}</span>`;
+    els.tasks.appendChild(row);
+  });
+}
+els.shift.addEventListener('change', renderTasks);
+
+// Clear checks
+els.clearBtn.onclick = () => {
+  els.tasks.querySelectorAll('input[type="checkbox"]').forEach(c=>c.checked=false);
+};
+
+// Submit
+els.submitBtn.onclick = async () => {
+  const housekeeper = els.housekeeper.value;
+  const shift = els.shift.value;
+  const date = els.date.value;
+  if(!housekeeper || !shift || !date){ alert('Please choose housekeeper, shift, and date.'); return; }
+  const tasks = SHIFT_TASKS[shift] || [];
+  const checks = Array.from(els.tasks.querySelectorAll('input[type="checkbox"]')).map((c,i)=>({checked:c.checked, text:tasks[i]}));
+  const completedCount = checks.filter(x=>x.checked).length;
+  const totalTasks = tasks.length;
+  const incompleteList = checks.filter(x=>!x.checked).map(x=>x.text).join(' • ');
+  const submittedAt = new Date().toISOString();
+  const completionRate = totalTasks ? Math.round((completedCount/totalTasks)*100) : 0;
+
+  const payload = { date, housekeeper, shift, completedCount, totalTasks, completionRate, submittedAt, incompleteList };
+
+  try{
+    const res = await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!res.ok) throw new Error(await res.text());
+    alert('✅ Submission saved!');
+    els.clearBtn.click();
+  }catch(e){
+    alert('❌ Could not save: '+e);
+  }
+};
+
+// Manager: fetch all
+async function fetchAll(){
+  try{
+    const r = await fetch(API);
+    const j = await r.json();
+    return j.submissions || [];
+  }catch(e){ return []; }
+}
+
+async function fetchAndRender(){
+  const data = await fetchAll();
+  const hk = els.fHousekeeper.value, sh = els.fShift.value, dt = els.fDate.value;
+  const rows = data.filter(r=>(!hk||r.housekeeper===hk)&&(!sh||r.shift===sh)&&(!dt||r.date===dt));
+  els.rows.innerHTML = rows.map(r=>`
+    <tr>
+      <td>${r.date||''}</td>
+      <td>${r.housekeeper||''}</td>
+      <td>${r.shift||''}</td>
+      <td>${r.completedCount||0}</td>
+      <td>${r.totalTasks||0}</td>
+      <td>${(r.completionRate||0)}%</td>
+      <td class="muted">${r.submittedAt? new Date(r.submittedAt).toLocaleString():''}</td>
+      <td>${r.incompleteList||''}</td>
+    </tr>
+  `).join('');
+}
+els.refreshBtn.onclick = fetchAndRender;
+
+// Export CSV
+els.exportBtn.onclick = async ()=>{
+  const data = await fetchAll();
+  if(!data.length){ alert('No data to export'); return; }
+  const header = ["date","housekeeper","shift","completedCount","totalTasks","completionRate","submittedAt","incompleteList"];
+  const lines = [header.join(",")].concat(
+    data.map(r=>header.map(k=>{
+      const v = (r[k]??"")+"";
+      return /[",\n]/.test(v) ? `"${v.replace(/"/g,'""')}"` : v;
+    }).join(","))
+  );
+  const blob = new Blob([lines.join("\n")],{type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement("a"),{href:url,download:"submissions.csv"});
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+};
+
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "name": "housekeeping-tracker-140w11th",
+  "private": true,
+  "dependencies": {
+    "googleapis": "^131.0.0"
+  }
+}
