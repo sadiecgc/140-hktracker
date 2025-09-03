@@ -1,9 +1,7 @@
 {
-  "name": "140-hk-tracker",
-  "version": "1.0.0",
+  "name": "140-hktracker",
   "private": true,
-  "license": "MIT",
   "dependencies": {
-    "googleapis": "^118.0.0"
+    "googleapis": "^129.0.0"
   }
 }
