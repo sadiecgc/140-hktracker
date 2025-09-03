@@ -1,10 +1,13 @@
 [build]
-command = ""
-publish = "."
+  publish = "."
+  functions = "netlify/functions"
 
 [functions]
-directory = "netlify/functions"
-node_bundler = "esbuild"
+  node_bundler = "esbuild"
+  external_node_modules = ["googleapis"]
 
-[build.environment]
-NODE_VERSION = "18"
+# Convenience path (optional): /api/submissions → function
+[[redirects]]
+  from = "/api/submissions"
+  to = "/.netlify/functions/submissions"
+  status = 200
