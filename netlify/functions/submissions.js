@@ -1,126 +1,141 @@
 // netlify/functions/submissions.js
-const { google } = require('googleapis');
+// CommonJS function that handles CORS, POST (append a row) and GET (read rows)
 
-const SHEET_TAB = process.env.GOOGLE_SHEETS_TAB || 'Submissions';
+const { google } = require("googleapis");
 
-// Build a Sheets client and normalize the private key so "\n" becomes real new lines
-function getSheets() {
-  const email = (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim();
-  let key = process.env.GOOGLE_PRIVATE_KEY || '';
-
-  if (!email || !key) {
-    throw new Error('Missing GOOGLE_SERVICE_ACCOUNT_EMAIL or GOOGLE_PRIVATE_KEY');
-  }
-
-  // If someone pasted the whole JSON key into the env var by mistake, extract private_key
-  try {
-    if (key.trim().startsWith('{') && key.includes('"private_key"')) {
-      const parsed = JSON.parse(key);
-      key = parsed.private_key || key;
-    }
-  } catch (_) { /* ignore if not JSON */ }
-
-  // Strip accidental wrapping quotes
-  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
-    key = key.slice(1, -1);
-  }
-
-  // Convert "\n" to real newlines and tidy
-  key = key.replace(/\\n/g, '\n').replace(/\r\n/g, '\n').trim();
-
-  // Sanity check
-  if (!/BEGIN (RSA )?PRIVATE KEY/.test(key)) {
-    throw new Error('GOOGLE_PRIVATE_KEY looks malformed after normalization');
-  }
-
-  const auth = new google.auth.JWT({
-    email,
-    key,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
-
-  return google.sheets({ version: 'v4', auth });
+// Helper: keep real newlines even if Netlify stored \n
+function normalizePrivateKey(raw) {
+  if (!raw) return "";
+  return raw.includes("BEGIN PRIVATE KEY") ? raw : raw.replace(/\\n/g, "\n");
 }
 
-// Simple helper to return responses with CORS
-function respond(status, body = {}) {
-  return {
-    statusCode: status,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Allow-Methods': 'POST,OPTIONS'
-    },
-    body: JSON.stringify(body)
-  };
+// Helper: first sheet name (so you don't have to hardcode)
+async function getFirstSheetTitle(sheets, spreadsheetId) {
+  const meta = await sheets.spreadsheets.get({ spreadsheetId });
+  const sheet = meta.data.sheets && meta.data.sheets[0];
+  const title = sheet?.properties?.title || "Sheet1";
+  return title;
 }
 
 exports.handler = async (event) => {
-  // CORS preflight
-  if (event.httpMethod === 'OPTIONS') return respond(200);
+  // CORS (allow the browser to POST)
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
 
-  if (event.httpMethod !== 'POST') {
-    return respond(405, { error: 'Method not allowed' });
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 204, headers: corsHeaders, body: "" };
   }
 
-  // Parse the JSON body the form sends
-  let payload = {};
   try {
-    payload = JSON.parse(event.body || '{}');
-  } catch {
-    return respond(400, { error: 'Bad JSON' });
-  }
+    const {
+      GOOGLE_SHEETS_ID,
+      GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      GOOGLE_PRIVATE_KEY,
+    } = process.env;
 
-  const {
-    date,
-    housekeeper,
-    shift,
-    completed = [],
-    incomplete = [],
-    totalTasks,
-    completedCount
-  } = payload;
+    if (!GOOGLE_SHEETS_ID || !GOOGLE_SERVICE_ACCOUNT_EMAIL || !GOOGLE_PRIVATE_KEY) {
+      return {
+        statusCode: 500,
+        headers: corsHeaders,
+        body: JSON.stringify({ error: "Missing Google env vars" }),
+      };
+    }
 
-    const nowISO = new Date().toISOString();
-  const d = date || nowISO.slice(0, 10);
-
-  const compCount = (typeof completedCount === 'number')
-    ? completedCount
-    : (Array.isArray(completed) ? completed.length : 0);
-
-  const total = (typeof totalTasks === 'number')
-    ? totalTasks
-    : compCount + (Array.isArray(incomplete) ? incomplete.length : 0);
-
-  // numeric 0..1 (Sheets shows as % because the column is formatted)
-  const rate = total ? compCount / total : '';
-
-  // pretty multi-line string for the sheet
-  const incompleteStr = Array.isArray(incomplete) ? incomplete.join('\n') : '';
-
-  // 8 columns matching the new header
-  const row = [
-    d,                    // A: Date
-    housekeeper || '',    // B: Housekeeper
-    shift || '',          // C: Shift
-    compCount,            // D: Completed Tasks
-    total,                // E: Total Tasks
-    rate,                 // F: Completion Rate (0..1)
-    nowISO,               // G: Submitted At
-    incompleteStr         // H: Incomplete List
-  ];
-
-  try {
-    const sheets = getSheets();
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: process.env.GOOGLE_SHEETS_ID,
-      range: `${SHEET_TAB}!A1`,
-      valueInputOption: 'RAW',
-      insertDataOption: 'INSERT_ROWS',
-      requestBody: { values: [row] }
+    const auth = new google.auth.JWT({
+      email: GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      key: normalizePrivateKey(GOOGLE_PRIVATE_KEY),
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     });
-    return respond(200, { ok: true });
+
+    const sheets = google.sheets({ version: "v4", auth });
+    const sheetTitle = await getFirstSheetTitle(sheets, GOOGLE_SHEETS_ID);
+
+    if (event.httpMethod === "GET") {
+      // Read rows for Manager Dashboard
+      const res = await sheets.spreadsheets.values.get({
+        spreadsheetId: GOOGLE_SHEETS_ID,
+        range: `${sheetTitle}!A:H`,
+      });
+
+      const rows = res.data.values || [];
+      const header = rows[0] || [];
+      const body = rows.slice(1).map((r) => {
+        const obj = {};
+        header.forEach((h, i) => (obj[h] = r[i] ?? ""));
+        return obj;
+      });
+
+      return {
+        statusCode: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+        body: JSON.stringify({ header, rows: body }),
+      };
+    }
+
+    if (event.httpMethod === "POST") {
+      const payload = JSON.parse(event.body || "{}");
+
+      // Expected fields from the form
+      const {
+        date,             // ISO (yyyy-mm-dd) from <input type="date">
+        housekeeper,      // string
+        shift,            // "Morning" | "Middle" | "Evening"
+        completedCount,   // number
+        totalTasks,       // number
+        completionRate,   // decimal 0..1
+        submittedAt,      // ISO timestamp
+        incomplete,       // array of strings (unchecked tasks)
+      } = payload;
+
+      // Protect against undefined values
+      const safeDate = date || new Date().toISOString().slice(0, 10);
+      const safeHK = housekeeper || "";
+      const safeShift = shift || "";
+      const safeCompleted = Number.isFinite(completedCount) ? completedCount : 0;
+      const safeTotal = Number.isFinite(totalTasks) ? totalTasks : 0;
+      const safeRate = Number.isFinite(completionRate) ? completionRate : 0;
+      const safeSubmitted = submittedAt || new Date().toISOString();
+      const safeIncomplete = Array.isArray(incomplete) ? incomplete : [];
+
+      const row = [
+        safeDate,
+        safeHK,
+        safeShift,
+        String(safeCompleted),
+        String(safeTotal),
+        String(safeRate),
+        safeSubmitted,
+        safeIncomplete.join("\n"), // <-- Multi-line cell of unchecked tasks
+      ];
+
+      await sheets.spreadsheets.values.append({
+        spreadsheetId: GOOGLE_SHEETS_ID,
+        range: `${sheetTitle}!A:H`,
+        valueInputOption: "RAW",
+        insertDataOption: "INSERT_ROWS",
+        requestBody: { values: [row] },
+      });
+
+      return {
+        statusCode: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+        body: JSON.stringify({ ok: true }),
+      };
+    }
+
+    return {
+      statusCode: 405,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: "Method not allowed" }),
+    };
   } catch (err) {
-    return respond(500, { error: String(err.message || err) });
+    return {
+      statusCode: 500,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: String(err && err.message || err) }),
+    };
   }
 };
