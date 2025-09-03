@@ -1,7 +1,8 @@
 {
-  "name": "housekeeping-tracker-140w11th",
+  "name": "140-hk-tracker",
+  "version": "1.0.0",
   "private": true,
-  {
+  "license": "MIT",
   "dependencies": {
     "googleapis": "^118.0.0"
   }
