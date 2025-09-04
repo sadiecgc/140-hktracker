@@ -132,33 +132,88 @@
       { value:"evening", label:"Evening Shift — 5:00 pm" },
     ];
     // One-column form: list items under each shift (customize!)
-    const SHIFT_TASKS = {
-      morning: [
-        "Turn lights on (or off exteriors)",
-        "Check Ms. Office; fresh water",
-        "Set the table for kids' breakfast",
-        "Empty dishwashers",
-        "Walk the dogs then feed",
-        "Check dining room from night prior",
-        "Quick walk through the house",
-        "Flowers — add water or change (2 people)",
-        "Assist with family breakfast",
-        "Clean up after breakfast",
-        "Receive and display packages",
-        "Check bathroom on kitchen floor",
-        "Clean Oli's room/bathroom",
-        "Clean Frankie's room/bathroom",
-        "Clean Sonnet's room (if applicable)",
-        "Collect laundry → bring to laundry room",
-        "Clean Master if available",
-        "Clean kids' lounge/sun room",
-        "Clean kids' 3rd floor hallways",
-        "Clean kids' room; organize closets",
-        "Clean & organize Caddy; replace tools"
-      ],
-      middle: ["Middle shift task 1","Middle shift task 2","Middle shift task 3"],
-      evening: ["Evening shift task 1","Evening shift task 2"]
-    };
+    // Replace your SHIFTS with this
+const SHIFTS = [
+  { value: "morning", label: "MORNING SHIFT 🌇 — 7:30 am" },
+  { value: "middle",  label: "MIDDLE SHIFT 🏙️ — 10:30/11:00 am" },
+  { value: "evening", label: "EVENING SHIFT 🌃 — 12:00 pm" },
+];
+
+// Replace your SHIFT_TASKS with this
+const SHIFT_TASKS = {
+  morning: [
+    "Turn lights on (or off exteriors)",
+    "Check Mrs. Office; fresh water in Owala stainless steel bottle",
+    "Set the table for kids’ breakfast",
+    "Empty dishwashers",
+    "Walk the dogs then feed",
+    "Check dining room from night prior",
+    "Do a quick quiet walk through the house to clean anything from the day before",
+    "Flowers → Add water or change (task for 2 people)",
+    "Assist with family breakfast and any additional needs",
+    "Clean up after breakfast",
+    "Receive and display packages",
+    "Check bathroom on kitchen floor",
+    "Clean Oli's room/bathroom",
+    "Clean Frankie's room/bathroom",
+    "Clean Sonnet's room → if available, if not falls on evening shift",
+    "Collect laundry → bring to laundry room",
+    "Clean Master if available, if not falls to middle shift",
+    "Clean kids’ lounge/snug room",
+    "Clean kids’ 3rd floor hallways",
+    "Clean kids’ room; organize closets"
+  ],
+
+  middle: [
+    "Set up kitchen for kids lunch (clean after)",
+    "Assist with cleaning Master or any rooms need attention",
+    "Assist with any packages or deliveries",
+    "Clean Master level hallway",
+    "Clean Sauna room/4th floor",
+    "Clean playroom if available",
+    "Clean 4th floor hallway",
+    "Clean 4th floor powder room → check all of them",
+    "Clean gym room; disinfect, organize",
+    "Assist with family lunch",
+    "Clean Mr. Stewart’s office",
+    "Collect kitchen garbage",
+    "Sweep outside every morning",
+    "Clean garden; blow leaves",
+    "Clean and organize furniture by the garden; cover it all if raining",
+    "Walk the dogs (Saturday or Sunday)",
+    "Clean bathroom on kitchen floor",
+    "Help put away laundry when ready",
+    "Change water for dogs"
+  ],
+
+  evening: [
+    "Ensure lights are on their evening setting around 5:30/6pm",
+    "Clean parlor level hallway",
+    "Clean dining room",
+    "Clean living room",
+    "Clean pantry and stairways on parlor level",
+    "Clean 138 entryway",
+    "Clean parlor level powder room",
+    "Clean balcony if needed",
+    "Turn down the kids’ rooms after nap (usually after 4pm)",
+    "Turn down, clean & refresh all bathrooms",
+    "Set dinner table for kids",
+    "Assist with family dinner",
+    "Clean guest room on kitchen floor",
+    "Feed cat and dogs",
+    "Walk dogs",
+    "Collect garbage (collect g. on sheet for sign days)",
+    "Bring clean laundry to the rooms",
+    "Check laundry room to ensure nothing is left",
+    "Refill fridge and ensure drinks are fully stocked",
+    "Empty cat/dog kitchen soup tray",
+    "Clean kitchen, pantry and mudroom for the day",
+    "Clear family room & check guest room apartment",
+    "Clean/organize cleaning caddy; make sure all cleaning tools are put back in right places and handheld vacuum filter is clean",
+    "Dispose of all garbage (Tuesday: trash and large items. Thursday: trash, recycling, composting. Saturday: trash and large items)"
+  ]
+};
+
 
     // ======== DOM HOOKS ========
     const els = {
