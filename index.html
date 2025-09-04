@@ -1,379 +1,343 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>140 W 11th — Housekeeping Task Tracker 2025</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Optional tiny icon in the heading -->
-  <link rel="icon" href="assets/site-icon.png" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Housekeeping Task Tracker</title>
   <style>
     :root{
-      --bg1:#5D6BE0; --bg2:#5F2B83;
-      --panel:#28343E; --panelText:#fff;
-      --chip: #e9eef3; --chipText:#111;
-      --primary:#1E90FF; --muted:#e9eef3;
-      --danger:#d33; --ok:#31a24c;
+      --bg:#1e2a5a; --card:#fff; --ink:#0f172a; --muted:#6b7280; --line:#e5e7eb;
+      --brand:#2563eb; --ok:#16a34a; --warn:#f59e0b; --bad:#ef4444;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
-      background: radial-gradient(1200px 800px at 20% -10%, var(--bg1), transparent 60%),
-                  radial-gradient(1200px 800px at 80% -10%, var(--bg2), transparent 60%),
-                  #1c2240;
-      min-height:100vh; color:#0d1b2a;
-    }
-    .wrap{
-      max-width:920px; margin:28px auto; padding:0 16px;
-    }
-    .card{
-      background:#fff; border-radius:14px; box-shadow:0 10px 35px rgba(0,0,0,.15);
-      overflow:hidden;
-    }
-    .nav{
-      background:#2e3a44; color:#fff; padding:22px 24px; text-align:center;
-    }
-    .title{display:flex; align-items:center; gap:12px; justify-content:center}
-    .title img{width:32px; height:32px; object-fit:contain}
-    .title h1{margin:0; font-size:40px; letter-spacing:.5px}
-    .subtitle{opacity:.85; margin-top:4px; font-size:14px}
-    .tabs{display:flex; gap:8px; justify-content:center; margin:16px auto 0}
-    .tab-btn{
-      padding:8px 14px; border-radius:8px; border:1px solid rgba(255,255,255,.15);
-      background:#3a4955; color:#fff; cursor:pointer; font-weight:600;
-    }
-    .tab-btn.active{background:#4c6374}
-    .body{padding:20px}
-    .row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin:8px 0 14px}
-    label{font-size:12px; font-weight:700; color:#374151; display:block; margin-bottom:6px}
-    select, input[type="date"]{
-      width:100%; padding:10px 12px; border-radius:8px; border:1px solid #d0d7de; background:#fff;
-      font-size:14px;
-    }
-    .chips{display:flex; flex-wrap:wrap; gap:14px; justify-content:center; padding:14px; background:#eef5fb; border-radius:10px; margin-bottom:14px}
-    .chip{display:flex; align-items:center; gap:8px; font-weight:700}
-    .dot{width:14px; height:14px; border-radius:50%; border:2px solid #2a2a2a}
-    .tasks{
-      background:#f7fbff; border:1px solid #dfe7ef; border-radius:12px; padding:16px;
-    }
-    .task{
-      display:flex; align-items:flex-start; gap:10px; padding:10px 12px;
-      border:1px solid #e6edf3; border-radius:10px; margin:8px 0; background:#fff;
-    }
-    .task input{margin-top:3px; transform: scale(1.1)}
-    .actions{display:flex; gap:10px; margin-top:12px}
-    button{
-      border:0; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:700
-    }
-    .btn-primary{background:var(--primary); color:#fff}
-    .btn-ghost{background:#eef2f7; color:#111}
-    .note{color:#6b7280; font-size:13px; margin-top:6px}
-    .hidden{display:none !important}
+    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;padding:24px}
+    .wrap{max-width:1100px;margin:0 auto;background:var(--card);border-radius:16px;box-shadow:0 20px 40px rgba(2,6,23,.25);overflow:hidden}
+    header{padding:28px;border-bottom:1px solid var(--line);background:linear-gradient(#243042,#243042) top/100% 140px no-repeat}
+    h1{margin:0;color:#fff;font-weight:800;letter-spacing:.02em;text-align:center}
+    .subtitle{color:#d1d5db;text-align:center;margin-top:6px}
+    nav{display:flex;justify-content:center;gap:12px;margin-top:16px}
+    .tab{padding:10px 16px;border-radius:999px;border:1px solid #3b4250;background:#3b4250;color:#cbd5e1;cursor:pointer}
+    .tab.active{background:#60a5fa;border-color:#60a5fa;color:#062945;font-weight:700}
+    main{padding:22px}
 
-    /* Manager table */
-    table{width:100%; border-collapse:collapse; margin-top:12px}
-    th,td{border-bottom:1px solid #e5e7eb; font-size:14px; padding:10px; text-align:left; vertical-align:top}
-    th{background:#f3f6fa; font-size:12px; text-transform:uppercase; letter-spacing:.05em}
-    .small{font-size:12px; color:#6b7280}
+    /* form layout */
+    .row{display:flex;gap:14px;flex-wrap:wrap}
+    .field{flex:1 1 280px;display:flex;flex-direction:column;gap:6px}
+    .label{font-size:12px;color:#334155;font-weight:600}
+    select,input[type=date]{height:38px;padding:0 10px;border:1px solid #d1d5db;border-radius:8px}
+    .hint{margin:18px 0 8px;color:#64748b;text-align:center}
+    .sectionTitle{margin:14px 0 8px;padding:12px 16px;background:#eef2ff;border-left:4px solid var(--brand);font-weight:700;letter-spacing:.03em}
+    .tasks{display:flex;flex-direction:column;gap:10px}
+    .task{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #e5e7eb;border-radius:10px;background:#fff}
+    .actions{display:flex;gap:10px;justify-content:center;margin:18px 0}
+    .btn{padding:10px 14px;border-radius:8px;border:1px solid #d1d5db;background:#2563eb;color:#fff;font-weight:700;cursor:pointer}
+    .btn.secondary{background:#e5e7eb;color:#111827}
+    .success{display:none;margin:14px auto 0;max-width:680px;background:#dcfce7;border:1px solid #86efac;color:#14532d;padding:10px 14px;border-radius:8px;text-align:center}
+
+    /* manager */
+    .toolbar{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:10px 0 20px}
+    .btn-link{padding:8px 12px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:8px;cursor:pointer}
+    .cards{display:flex;flex-direction:column;gap:12px}
+    .card{border:1px solid #e5e7eb;border-left-width:6px;border-radius:12px;padding:12px 14px;background:#fff}
+    .card .top{display:flex;justify-content:space-between;gap:10px}
+    .badge{font-weight:800;padding:6px 10px;border-radius:999px;color:#fff}
+    .b-ok{background:var(--ok)} .b-warn{background:var(--warn)} .b-bad{background:var(--bad)}
+    details{margin-top:6px}
+    .muted{color:#6b7280}
+    @media (max-width:640px){ header{padding:20px} }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
-      <div class="nav">
-        <div class="title">
-          <img src="assets/site-icon.png" alt="">
-          <h1>140 W 11th</h1>
-        </div>
-        <div class="subtitle">CHESTERMAN GROUP CORP — Housekeeping Task Tracker 2025</div>
-        <div class="tabs">
-          <button id="tab-form" class="tab-btn active">Housekeeper Form</button>
-          <button id="tab-dash" class="tab-btn">Manager Dashboard</button>
-        </div>
-      </div>
+    <header>
+      <h1 id="title">Housekeeping Task Tracker</h1>
+      <div class="subtitle">CHESTERMAN GROUP CORP — Housekeeping Task Tracker 2025</div>
+      <nav>
+        <button id="tabForm" class="tab active">Housekeeper Form</button>
+        <button id="tabMgr" class="tab">Manager Dashboard</button>
+      </nav>
+    </header>
 
-      <!-- FORM TAB -->
-      <div id="formTab" class="body">
-        <div class="chips" id="legend"></div>
-
+    <main>
+      <!-- ================= Housekeeper Form ================= -->
+      <section id="panelForm">
         <div class="row">
-          <div>
-            <label>Housekeeper</label>
+          <div class="field">
+            <label class="label">Housekeeper</label>
             <select id="housekeeper"></select>
           </div>
-          <div>
-            <label>Shift</label>
+          <div class="field">
+            <label class="label">Shift</label>
             <select id="shift"></select>
           </div>
-          <div>
-            <label>Date</label>
-            <input type="date" id="date">
+          <div class="field">
+            <label class="label">Date</label>
+            <input id="date" type="date"/>
           </div>
         </div>
 
-        <div id="tasksWrap" class="tasks"></div>
+        <div id="hint" class="hint">Please select a shift to see the tasks</div>
+        <div id="tasks" class="tasks"></div>
 
         <div class="actions">
-          <button id="submitBtn" class="btn-primary">Submit Daily Tasks</button>
-          <button id="clearBtn" class="btn-ghost">Clear checks</button>
+          <button id="submit" class="btn">Submit Daily Tasks</button>
+          <button id="clear" class="btn secondary">Clear checks</button>
         </div>
-        <div class="note">Unchecked items will be logged to <b>Incomplete Tasks</b> in the sheet.</div>
-      </div>
+        <div id="success" class="success">Tasks submitted successfully! ✅</div>
+        <div class="muted" style="text-align:center;margin-top:8px">
+          Unchecked items will be logged to <b>Incomplete Tasks</b> in the sheet.
+        </div>
+      </section>
 
-      <!-- MANAGER PANEL -->
-<section id="panelMgr" style="display:none">
-  <div class="muted">Reading from your Google Sheet via the Netlify Function (GET)</div>
-  <table>
-    <thead>
-      <tr>
-        <th>DATE</th><th>HOUSEKEEPER</th><th>SHIFT</th>
-        <th>COMPLETED</th><th>TOTAL</th><th>RATE</th>
-        <th>SUBMITTED</th><th>INCOMPLETE TASKS</th>
-      </tr>
-    </thead>
-    <tbody id="mgrRows"><tr><td colspan="8">No rows</td></tr></tbody>
-  </table>
-</section>
+      <!-- ================= Manager Dashboard ================= -->
+      <section id="panelMgr" style="display:none">
+        <div class="toolbar">
+          <div class="field" style="flex:1 1 200px">
+            <label class="label">Housekeeper</label>
+            <select id="filterKeeper"><option value="">All Housekeepers</option></select>
+          </div>
+          <div class="field" style="flex:1 1 200px">
+            <label class="label">Shift</label>
+            <select id="filterShift">
+              <option value="">All Shifts</option>
+              <option value="morning">Morning</option>
+              <option value="middle">Middle</option>
+              <option value="evening">Evening</option>
+            </select>
+          </div>
+          <div class="field" style="flex:1 1 160px">
+            <label class="label">Date</label>
+            <input id="filterDate" type="date"/>
+          </div>
+          <button id="openSheet" class="btn-link" title="Open in Google Sheets">Open in Google Sheets</button>
+          <button id="clearFilters" class="btn-link">Clear Filters</button>
+        </div>
 
-
-    </div>
+        <div id="cards" class="cards"><div class="muted">Loading…</div></div>
+      </section>
+    </main>
   </div>
 
   <script>
-(function () {
-  // === CONFIG YOU CAN EDIT ===
-  const FUNCTION_URL = "/.netlify/functions/submissions";
-  const SITE_TITLE = "PROPERTY NAME – Housekeeping Task Tracker";
-  const HOUSEKEEPERS = ["JACKY","KUNGA","LORENA","HEIDI","ANA","IRMA","AGNES","ANITA"];
-  const SHIFTS = [
-    { value:"morning", label:"Morning Shift — 7:30 am" },
-    { value:"middle",  label:"Middle Shift — 1:00 pm" },
-    { value:"evening", label:"Evening Shift — 5:00 pm" },
-  ];
-  const SHIFT_TASKS = {
-    morning: [
-      "Turn lights on (or off exteriors)",
-      "Check Ms. Office; fresh water",
-      "Set the table for kids' breakfast",
-      "Empty dishwashers",
-      "Walk the dogs then feed",
-      "Check dining room from night prior",
-      "Quick walk through the house",
-      "Flowers — add water or change (2 people)",
-      "Assist with family breakfast",
-      "Clean up after breakfast",
-      "Receive and display packages",
-      "Check bathroom on kitchen floor",
-      "Clean Oli's room/bathroom",
-      "Clean Frankie's room/bathroom",
-      "Clean Sonnet's room (if applicable)",
-      "Collect laundry → bring to laundry room",
-      "Clean Master if available",
-      "Clean kids' lounge/sun room",
-      "Clean kids' 3rd floor hallways",
-      "Clean kids' room; organize closets",
-      "Clean & organize Caddy; replace tools"
-    ],
-    middle: ["Middle shift example task 1","Middle shift example task 2"],
-    evening: ["Evening shift example task 1","Evening shift example task 2"]
-  };
+  (function () {
+    // ======== CONFIG (edit these for each property) ========
+    const SITE_TITLE = "140 W 11th – Housekeeping Task Tracker";
+    const FUNCTION_URL = "/.netlify/functions/submissions"; // Netlify function path
+    const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1-2paA8-qALzx1QKVe4S37im_HtL7TWn4yiheIT5AygM/edit?gid=0#gid=0"
 
-  // === DOM HOOKS ===
-  const els = {
-    title: document.getElementById("title"),
-    housekeeper: document.getElementById("housekeeper"),
-    shift: document.getElementById("shift"),
-    date: document.getElementById("date"),
-    hint: document.getElementById("hint"),
-    tasks: document.getElementById("tasks"),
-    submit: document.getElementById("submit"),
-    clear: document.getElementById("clear"),
-    tabForm: document.getElementById("tabForm"),
-    tabMgr: document.getElementById("tabMgr"),
-    panelForm: document.getElementById("panelForm"),
-    panelMgr: document.getElementById("panelMgr"),
-    mgrRows: document.getElementById("mgrRows"),
-  };
-
-  // === INIT PAGE ===
-  function fillSelects() {
-    // title + date
-    if (els.title) els.title.textContent = SITE_TITLE;
-    if (els.date) els.date.valueAsNumber = Date.now() - (new Date()).getTimezoneOffset()*60000;
-
-    // housekeepers
-    if (els.housekeeper) {
-      els.housekeeper.innerHTML = "";
-      HOUSEKEEPERS.forEach(n => {
-        const o = document.createElement("option");
-        o.value = n; o.textContent = n;
-        els.housekeeper.appendChild(o);
-      });
-    }
-
-    // shifts
-    if (els.shift) {
-      els.shift.innerHTML = "";
-      SHIFTS.forEach(s => {
-        const o = document.createElement("option");
-        o.value = s.value; o.textContent = s.label;
-        els.shift.appendChild(o);
-      });
-    }
-  }
-
-  function renderTasks() {
-    if (!els.tasks || !els.hint || !els.shift) return;
-    const s = els.shift.value;
-    els.tasks.innerHTML = '';
-    if (!s) {
-      els.hint.className = 'hint';
-      els.hint.textContent = "Please select a shift to see the tasks";
-      return;
-    }
-    const list = SHIFT_TASKS[s] || [];
-    els.hint.className = 'hint sectionTitle';
-    const found = SHIFTS.find(x => x.value === s);
-    els.hint.textContent = (found ? found.label.split("—")[0] : s).toUpperCase();
-    list.forEach((t,i)=>{
-      const row = document.createElement('label');
-      row.className = 'task';
-      row.innerHTML = `<input type="checkbox" data-i="${i}"/> <span>${t}</span>`;
-      els.tasks.appendChild(row);
-    });
-  }
-
-  // === SUBMIT HANDLER (writes A:H) ===
-  async function handleSubmit() {
-    const items = (SHIFT_TASKS[els.shift.value] || []);
-    const checks = Array.from(els.tasks.querySelectorAll('input[type=checkbox]'));
-    const incomplete = items.filter((_,i)=> !checks[i]?.checked);
-    const payload = {
-      date: els.date.value,
-      housekeeper: els.housekeeper.value,
-      shift: els.shift.value,
-      completedCount: items.length - incomplete.length,
-      totalTasks: items.length,
-      completionRate: items.length ? Math.round(((items.length - incomplete.length) / items.length) * 100) : 0,
-      submittedAt: new Date().toISOString(),
-      incompleteList: incomplete   // backend accepts incompleteList or incomplete
+    const HOUSEKEEPERS = ["JACKY","KUNGA","LORENA","HEIDI","ANA","IRMA","AGNES","ANITA"];
+    const SHIFTS = [
+      { value:"morning", label:"Morning Shift — 7:30 am" },
+      { value:"middle",  label:"Middle Shift — 1:00 pm" },
+      { value:"evening", label:"Evening Shift — 5:00 pm" },
+    ];
+    // One-column form: list items under each shift (customize!)
+    const SHIFT_TASKS = {
+      morning: [
+        "Turn lights on (or off exteriors)",
+        "Check Ms. Office; fresh water",
+        "Set the table for kids' breakfast",
+        "Empty dishwashers",
+        "Walk the dogs then feed",
+        "Check dining room from night prior",
+        "Quick walk through the house",
+        "Flowers — add water or change (2 people)",
+        "Assist with family breakfast",
+        "Clean up after breakfast",
+        "Receive and display packages",
+        "Check bathroom on kitchen floor",
+        "Clean Oli's room/bathroom",
+        "Clean Frankie's room/bathroom",
+        "Clean Sonnet's room (if applicable)",
+        "Collect laundry → bring to laundry room",
+        "Clean Master if available",
+        "Clean kids' lounge/sun room",
+        "Clean kids' 3rd floor hallways",
+        "Clean kids' room; organize closets",
+        "Clean & organize Caddy; replace tools"
+      ],
+      middle: ["Middle shift task 1","Middle shift task 2","Middle shift task 3"],
+      evening: ["Evening shift task 1","Evening shift task 2"]
     };
-    const res = await fetch(FUNCTION_URL, {
-      method: "POST",
-      headers: { "Content-Type":"application/json" },
-      body: JSON.stringify(payload)
-    });
-    if (res.ok) {
-      alert("Submitted!");
-      loadManager();
-    } else {
-      alert("Submit failed");
-    }
-  }
 
-  // === MANAGER DASHBOARD LOADER ===
-  async function loadManager() {
-    if (!els.mgrRows) return;
-    els.mgrRows.innerHTML = `<tr><td colspan="8">Loading…</td></tr>`;
-    try {
-      const r = await fetch(FUNCTION_URL);
-      const data = await r.json();
-      const rows = Array.isArray(data) ? data : (data.submissions || []);
-      if (!rows.length) {
-        els.mgrRows.innerHTML = `<tr><td colspan="8">No rows</td></tr>`;
-        return;
+    // ======== DOM HOOKS ========
+    const els = {
+      title: document.getElementById("title"),
+      tabForm: document.getElementById("tabForm"),
+      tabMgr:  document.getElementById("tabMgr"),
+      panelForm: document.getElementById("panelForm"),
+      panelMgr:  document.getElementById("panelMgr"),
+
+      housekeeper: document.getElementById("housekeeper"),
+      shift: document.getElementById("shift"),
+      date: document.getElementById("date"),
+      hint: document.getElementById("hint"),
+      tasks: document.getElementById("tasks"),
+      submit: document.getElementById("submit"),
+      clear: document.getElementById("clear"),
+      success: document.getElementById("success"),
+
+      filterKeeper: document.getElementById("filterKeeper"),
+      filterShift: document.getElementById("filterShift"),
+      filterDate: document.getElementById("filterDate"),
+      openSheet: document.getElementById("openSheet"),
+      clearFilters: document.getElementById("clearFilters"),
+      cards: document.getElementById("cards"),
+    };
+
+    // ======== INIT ========
+    els.title.textContent = SITE_TITLE;
+    els.date.valueAsNumber = Date.now() - (new Date()).getTimezoneOffset()*60000;
+
+    // fill selects
+    function fillLists() {
+      if (els.housekeeper) {
+        els.housekeeper.innerHTML = "";
+        HOUSEKEEPERS.forEach(n => {
+          const o = document.createElement("option"); o.value = o.textContent = n;
+          els.housekeeper.appendChild(o);
+        });
       }
-      const html = rows.map(s => `
-        <tr>
-          <td>${s.date || ""}</td>
-          <td>${s.housekeeper || ""}</td>
-          <td>${s.shift || ""}</td>
-          <td>${s.completedCount ?? ""}</td>
-          <td>${s.totalTasks ?? ""}</td>
-          <td>${s.completionRate === "" ? "" : `${s.completionRate}%`}</td>
-          <td>${(s.submittedAt || "").replace("T"," ").replace("Z","")}</td>
-          <td>${
-            Array.isArray(s.incompleteList)
-              ? s.incompleteList.join(", ")
-              : (s.incompleteList || s.incomplete || "")
-          }</td>
-        </tr>
-      `).join("");
-      els.mgrRows.innerHTML = html;
-    } catch (e) {
-      els.mgrRows.innerHTML = `<tr><td colspan="8">Error: ${e.message}</td></tr>`;
+      if (els.shift) {
+        els.shift.innerHTML = "";
+        SHIFTS.forEach(s => {
+          const o = document.createElement("option"); o.value = s.value; o.textContent = s.label;
+          els.shift.appendChild(o);
+        });
+      }
+      if (els.filterKeeper) {
+        els.filterKeeper.innerHTML = '<option value="">All Housekeepers</option>';
+        HOUSEKEEPERS.forEach(n => {
+          const o = document.createElement("option"); o.value = o.textContent = n;
+          els.filterKeeper.appendChild(o);
+        });
+      }
+      if (GOOGLE_SHEET_URL) {
+        els.openSheet.onclick = () => window.open(GOOGLE_SHEET_URL, "_blank");
+      } else {
+        els.openSheet.style.display = "none";
+      }
     }
-  }
+    fillLists();
 
-  // === WIRE UP EVENTS ===
-  document.addEventListener('DOMContentLoaded', () => {
-    fillSelects();
+    // ======== FORM RENDERING ========
+    function renderTasks() {
+      els.tasks.innerHTML = "";
+      const s = els.shift.value;
+      if (!s) { els.hint.textContent = "Please select a shift to see the tasks"; els.hint.className = "hint"; return; }
+      const items = SHIFT_TASKS[s] || [];
+      const found = SHIFTS.find(x => x.value === s);
+      els.hint.textContent = (found ? found.label.split("—")[0] : s).toUpperCase();
+      els.hint.className = "hint sectionTitle";
+      items.forEach((t, i) => {
+        const row = document.createElement("label");
+        row.className = "task";
+        row.innerHTML = `<input type="checkbox" data-i="${i}"> <span>${t}</span>`;
+        els.tasks.appendChild(row);
+      });
+    }
+    els.shift.addEventListener("change", renderTasks);
     renderTasks();
-  });
-  els.shift?.addEventListener('change', renderTasks);
-  els.clear?.addEventListener('click', () => {
-    els.tasks?.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
-  });
-  els.submit?.addEventListener('click', handleSubmit);
-  els.tabMgr?.addEventListener('click', loadManager);
 
-  // expose if you need it
-  window.loadManager = loadManager;
-})();
-</script>
+    els.clear.addEventListener("click", () => {
+      els.tasks.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+    });
 
-(function () {
-  // Your function URL (works for Netlify functions)
-  const FUNCTION_URL = "/.netlify/functions/submissions";
-
-  // Fill the Manager Dashboard table body (#mgrRows)
-  async function loadManager() {
-    const tbody = document.getElementById("mgrRows");
-    if (!tbody) return;                        // make sure your <tbody id="mgrRows"> exists
-    tbody.innerHTML = `<tr><td colspan="8">Loading…</td></tr>`;
-    try {
-      const res = await fetch(FUNCTION_URL);
-      const payload = await res.json();
-      // our Netlify function returns { submissions: [...] }
-      const rows = Array.isArray(payload) ? payload : (payload.submissions || []);
-
-      if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="8">No rows</td></tr>`;
-        return;
+    // ======== SUBMIT (writes to A:H) ========
+    els.submit.addEventListener("click", async () => {
+      const items = SHIFT_TASKS[els.shift.value] || [];
+      const checks = Array.from(els.tasks.querySelectorAll('input[type=checkbox]'));
+      const incomplete = items.filter((_, i) => !checks[i]?.checked);
+      const payload = {
+        date: els.date.value,
+        housekeeper: els.housekeeper.value,
+        shift: els.shift.value,
+        completedCount: items.length - incomplete.length,
+        totalTasks: items.length,
+        completionRate: items.length ? Math.round(((items.length - incomplete.length) / items.length) * 100) : 0,
+        submittedAt: new Date().toISOString(),
+        incompleteList: incomplete     // backend accepts incompleteList or incomplete
+      };
+      const res = await fetch(FUNCTION_URL, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(payload) });
+      if (res.ok) {
+        els.success.style.display = "block";
+        setTimeout(()=> els.success.style.display = "none", 2500);
+        loadManager(); // refresh dashboard
+      } else {
+        alert("Submit failed");
       }
+    });
 
-      const html = rows.map(s => `
-        <tr>
-          <td>${s.date || ""}</td>
-          <td>${s.housekeeper || ""}</td>
-          <td>${s.shift || ""}</td>
-          <td>${s.completedCount ?? ""}</td>
-          <td>${s.totalTasks ?? ""}</td>
-          <td>${s.completionRate === "" ? "" : `${s.completionRate}%`}</td>
-          <td>${(s.submittedAt || "").replace("T"," ").replace("Z","")}</td>
-          <td>${
-            Array.isArray(s.incompleteList)
-              ? s.incompleteList.join(", ")
-              : (s.incompleteList || s.incomplete || "")
-          }</td>
-        </tr>
-      `).join("");
-
-      tbody.innerHTML = html;
-    } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="8">Error: ${e.message}</td></tr>`;
+    // ======== MANAGER DASHBOARD ========
+    async function fetchSubmissions() {
+      const r = await fetch(FUNCTION_URL);
+      const payload = await r.json();
+      return Array.isArray(payload) ? payload : (payload.submissions || []);
     }
-  }
 
-  // Load when you click the Manager Dashboard tab
-  document.getElementById("tabMgr")?.addEventListener("click", loadManager);
+    function badgeClass(pct){
+      if (pct >= 90) return "b-ok";
+      if (pct >= 70) return "b-warn";
+      return "b-bad";
+    }
 
-  // Optional: also load on page open (handy for testing)
-  // loadManager();
+    function passesFilters(row){
+      if (els.filterKeeper.value && row.housekeeper !== els.filterKeeper.value) return false;
+      if (els.filterShift.value && row.shift !== els.filterShift.value) return false;
+      if (els.filterDate.value && row.date !== els.filterDate.value) return false;
+      return true;
+    }
 
-  // Expose for other code if needed:
-  window.loadManager = loadManager;
-})();
-</script>
+    async function loadManager() {
+      els.cards.innerHTML = '<div class="muted">Loading…</div>';
+      try{
+        const rows = (await fetchSubmissions()).filter(passesFilters);
+        if (!rows.length) { els.cards.innerHTML = '<div class="muted">No rows</div>'; return; }
+        els.cards.innerHTML = rows.map(s => {
+          const pct = s.completionRate === "" ? "" : Number(s.completionRate);
+          const badge = pct === "" ? "" : `<span class="badge ${badgeClass(pct)}">${s.completedCount}/${s.totalTasks} tasks (${pct}%)</span>`;
+          const inc = Array.isArray(s.incompleteList) ? s.incompleteList
+                    : String(s.incompleteList || s.incomplete || "").split(/;\s*|,\s*/).filter(Boolean);
+          return `
+            <div class="card" style="border-left-color:#60a5fa">
+              <div class="top">
+                <div><b>${(s.housekeeper || "").toUpperCase()}</b> — ${(s.shift || "").toUpperCase()}<br>
+                  <span class="muted">Date: ${s.date || ""} • Submitted: ${(s.submittedAt || "").replace('T',' ').replace('Z','')}</span>
+                </div>
+                <div>${badge}</div>
+              </div>
+              <details>
+                <summary>View Incomplete Tasks</summary>
+                <ul style="margin:8px 0 0 18px">${inc.length ? inc.map(t=>`<li>${t}</li>`).join("") : "<li>None 🎉</li>"}</ul>
+              </details>
+            </div>
+          `;
+        }).join("");
+      }catch(e){
+        els.cards.innerHTML = `<div class="muted">Error loading: ${e.message}</div>`;
+      }
+    }
 
+    // filters
+    els.clearFilters.addEventListener("click", ()=>{
+      els.filterKeeper.value = "";
+      els.filterShift.value = "";
+      els.filterDate.value = "";
+      loadManager();
+    });
+    [els.filterKeeper, els.filterShift, els.filterDate].forEach(el => el?.addEventListener("change", loadManager));
+
+    // tab switching
+    els.tabForm.addEventListener("click", ()=>{
+      els.tabForm.classList.add("active"); els.tabMgr.classList.remove("active");
+      els.panelForm.style.display="block";  els.panelMgr.style.display="none";
+    });
+    els.tabMgr.addEventListener("click", ()=>{
+      els.tabMgr.classList.add("active"); els.tabForm.classList.remove("active");
+      els.panelMgr.style.display="block";   els.panelForm.style.display="none";
+      loadManager();
+    });
+  })();
+  </script>
 </body>
 </html>
