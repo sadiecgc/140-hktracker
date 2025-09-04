@@ -119,19 +119,21 @@
         <div class="note">Unchecked items will be logged to <b>Incomplete Tasks</b> in the sheet.</div>
       </div>
 
-      <!-- MANAGER DASHBOARD -->
-      <div id="dashTab" class="body hidden">
-        <div class="small">Reading from your Google Sheet via the Netlify Function (GET)</div>
-        <table id="dashTable">
-          <thead>
-            <tr>
-              <th>Date</th><th>Housekeeper</th><th>Shift</th>
-              <th>Completed</th><th>Total</th><th>Rate</th><th>Submitted</th><th>Incomplete Tasks</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
+      <!-- MANAGER PANEL -->
+<section id="panelMgr" style="display:none">
+  <div class="muted">Reading from your Google Sheet via the Netlify Function (GET)</div>
+  <table>
+    <thead>
+      <tr>
+        <th>DATE</th><th>HOUSEKEEPER</th><th>SHIFT</th>
+        <th>COMPLETED</th><th>TOTAL</th><th>RATE</th>
+        <th>SUBMITTED</th><th>INCOMPLETE TASKS</th>
+      </tr>
+    </thead>
+    <tbody id="mgrRows"><tr><td colspan="8">No rows</td></tr></tbody>
+  </table>
+</section>
+
 
     </div>
   </div>
@@ -336,6 +338,60 @@
         tbody.innerHTML = `<tr><td colspan="8">Error: ${e.message}</td></tr>`;
       }
     }
-  </script>
+ <script>
+(function () {
+  // Your function URL (works for Netlify functions)
+  const FUNCTION_URL = "/.netlify/functions/submissions";
+
+  // Fill the Manager Dashboard table body (#mgrRows)
+  async function loadManager() {
+    const tbody = document.getElementById("mgrRows");
+    if (!tbody) return;                        // make sure your <tbody id="mgrRows"> exists
+    tbody.innerHTML = `<tr><td colspan="8">Loading…</td></tr>`;
+    try {
+      const res = await fetch(FUNCTION_URL);
+      const payload = await res.json();
+      // our Netlify function returns { submissions: [...] }
+      const rows = Array.isArray(payload) ? payload : (payload.submissions || []);
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="8">No rows</td></tr>`;
+        return;
+      }
+
+      const html = rows.map(s => `
+        <tr>
+          <td>${s.date || ""}</td>
+          <td>${s.housekeeper || ""}</td>
+          <td>${s.shift || ""}</td>
+          <td>${s.completedCount ?? ""}</td>
+          <td>${s.totalTasks ?? ""}</td>
+          <td>${s.completionRate === "" ? "" : `${s.completionRate}%`}</td>
+          <td>${(s.submittedAt || "").replace("T"," ").replace("Z","")}</td>
+          <td>${
+            Array.isArray(s.incompleteList)
+              ? s.incompleteList.join(", ")
+              : (s.incompleteList || s.incomplete || "")
+          }</td>
+        </tr>
+      `).join("");
+
+      tbody.innerHTML = html;
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="8">Error: ${e.message}</td></tr>`;
+    }
+  }
+
+  // Load when you click the Manager Dashboard tab
+  document.getElementById("tabMgr")?.addEventListener("click", loadManager);
+
+  // Optional: also load on page open (handy for testing)
+  // loadManager();
+
+  // Expose for other code if needed:
+  window.loadManager = loadManager;
+})();
+</script>
+
 </body>
 </html>
