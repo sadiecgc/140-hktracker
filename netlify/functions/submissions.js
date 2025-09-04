@@ -48,43 +48,37 @@ exports.handler = async (event) => {
     }
 
     if (event.httpMethod === "POST") {
-      const body = JSON.parse(event.body || "{}");
+  const body = JSON.parse(event.body || "{}");
 
-      // accept either "incomplete" OR "incompleteList" from the form
-      let inc =
-        Array.isArray(body.incompleteList) ? body.incompleteList :
-        Array.isArray(body.incomplete)     ? body.incomplete :
-        typeof body.incompleteList === "string" ? body.incompleteList.split(/,\s*|;\s*/) :
-        typeof body.incomplete === "string"     ? body.incomplete.split(/,\s*|;\s*/) :
-        [];
+  // accept either "incompleteList" or "incomplete" from the form
+  const inc = Array.isArray(body.incompleteList) ? body.incompleteList
+            : Array.isArray(body.incomplete)     ? body.incomplete
+            : typeof body.incompleteList === "string" ? body.incompleteList.split(/,\s*|;\s*/) 
+            : typeof body.incomplete === "string"     ? body.incomplete.split(/,\s*|;\s*/)
+            : [];
 
-      const completedCount = Number(body.completedCount ?? 0);
-      const totalTasks     = Number(body.totalTasks ?? 0);
-      const completionRate = totalTasks ? Math.round((completedCount / totalTasks) * 100) : 0;
+  const completedCount = Number(body.completedCount ?? 0);
+  const totalTasks     = Number(body.totalTasks ?? 0);
+  const completionRate = totalTasks ? Math.round((completedCount / totalTasks) * 100) : 0;
 
-      const row = [
-        body.date || "",
-        body.housekeeper || "",
-        body.shift || "",
-        String(completedCount),
-        String(totalTasks),
-        String(completionRate),  // store integer percent
-        body.submittedAt || new Date().toISOString(),
-        inc.join("; ")           // column H
-      ];
+  const row = [
+    body.date || "",
+    body.housekeeper || "",
+    body.shift || "",
+    String(completedCount),
+    String(totalTasks),
+    String(completionRate),              // integer percent
+    body.submittedAt || new Date().toISOString(),
+    inc.join("; ")                       // <-- writes to column H
+  ];
 
-      await sheets.spreadsheets.values.append({
-        spreadsheetId,
-        range: "A:H",
-        valueInputOption: "USER_ENTERED",
-        requestBody: { values: [row] },
-      });
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: "A:H",
+    valueInputOption: "USER_ENTERED",
+    requestBody: { values: [row] }
+  });
 
-      return respond(200, { ok: true });
-    }
+  return respond(200, { ok: true });
+}
 
-    return { statusCode: 405, headers: CORS, body: "Method Not Allowed" };
-  } catch (e) {
-    return respond(500, { error: e.message || "Unknown error" });
-  }
-};
