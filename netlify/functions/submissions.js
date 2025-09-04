@@ -6,7 +6,8 @@ exports.handler = async (event)=>{
   if(event.httpMethod==="OPTIONS") return {statusCode:204,headers:CORS,body:""};
   try{
     const email=process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-    const key=(process.env.GOOGLE_PRIVATE_KEY||"").replace(/\\n/g,"\n");
+    const rawKey = process.env.GOOGLE_PRIVATE_KEY || "";
+    const privateKey = rawKey.includes("\\n") ? rawKey.replace(/\\n/g, "\n") : rawKey;
     const sheet=process.env.GOOGLE_SHEETS_ID;
     if(!email||!key||!sheet) return respond(500,{error:"Missing env vars"});
     const auth=new (require("googleapis").google.auth.JWT)(email,null,key,["https://www.googleapis.com/auth/spreadsheets"]);
