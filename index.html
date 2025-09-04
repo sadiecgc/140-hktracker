@@ -139,206 +139,188 @@
   </div>
 
   <script>
-    // ---------------- Config ----------------
-    const HOUSEKEEPERS = [
-      {name:"JACKY",  color:"#e84b3c"},
-      {name:"KUNGA",  color:"#2ecc71"},
-      {name:"LORENA", color:"#4aa3d9"},
-      {name:"HEIDI",  color:"#9b59b6"},
-      {name:"ANA",    color:"#f1a20b"},
-      {name:"IRMA",   color:"#e91e63"},
-      {name:"AGNES",  color:"#34495e"},
-      {name:"ANITA",  color:"#2ecc71"},
-      {name:"MARIA",  color:"#ECF0F1"} // very light gray
-    ];
+(function () {
+  // === CONFIG YOU CAN EDIT ===
+  const FUNCTION_URL = "/.netlify/functions/submissions";
+  const SITE_TITLE = "PROPERTY NAME – Housekeeping Task Tracker";
+  const HOUSEKEEPERS = ["JACKY","KUNGA","LORENA","HEIDI","ANA","IRMA","AGNES","ANITA"];
+  const SHIFTS = [
+    { value:"morning", label:"Morning Shift — 7:30 am" },
+    { value:"middle",  label:"Middle Shift — 1:00 pm" },
+    { value:"evening", label:"Evening Shift — 5:00 pm" },
+  ];
+  const SHIFT_TASKS = {
+    morning: [
+      "Turn lights on (or off exteriors)",
+      "Check Ms. Office; fresh water",
+      "Set the table for kids' breakfast",
+      "Empty dishwashers",
+      "Walk the dogs then feed",
+      "Check dining room from night prior",
+      "Quick walk through the house",
+      "Flowers — add water or change (2 people)",
+      "Assist with family breakfast",
+      "Clean up after breakfast",
+      "Receive and display packages",
+      "Check bathroom on kitchen floor",
+      "Clean Oli's room/bathroom",
+      "Clean Frankie's room/bathroom",
+      "Clean Sonnet's room (if applicable)",
+      "Collect laundry → bring to laundry room",
+      "Clean Master if available",
+      "Clean kids' lounge/sun room",
+      "Clean kids' 3rd floor hallways",
+      "Clean kids' room; organize closets",
+      "Clean & organize Caddy; replace tools"
+    ],
+    middle: ["Middle shift example task 1","Middle shift example task 2"],
+    evening: ["Evening shift example task 1","Evening shift example task 2"]
+  };
 
-    const SHIFT_TASKS = {
-      "Morning": [
-        "Turn lights on (or off exteriors)",
-        "Check Mrs. Office; fresh water in Owala stainless steel bottle",
-        "Set the table for kids’ breakfast",
-        "Empty dishwashers",
-        "Walk the dogs then feed",
-        "Check dining room from night prior",
-        "Do a quick quiet walk through the house to clean anything from the day before",
-        "Flowers → Add water or change (task for 2 people)",
-        "Assist with family breakfast and any additional needs",
-        "Clean up after breakfast",
-        "Receive and display packages",
-        "Check bathroom on kitchen floor",
-        "Clean Oli's room/bathroom",
-        "Clean Frankie's room/bathroom",
-        "Clean Sonnet's room → if available, if not falls on evening shift",
-        "Collect laundry → bring to laundry room",
-        "Clean Master if available, if not falls to middle shift",
-        "Clean kids’ lounge/snug room",
-        "Clean kids’ 3rd floor hallways",
-        "Clean kids’ room; organize closets",
-        "Clean, organize Caddy and make sure all cleaning tools are put back in right places and handheld vacuum filter is clean and in place."
-      ],
-      "Middle": [
-        "Set up kitchen for kids lunch (clean after)",
-        "Assist with cleaning Master or any rooms need attention",
-        "Assist with any packages or deliveries",
-        "Clean Master level hallway",
-        "Clean Sauna room/4th floor",
-        "Clean playroom if available",
-        "Clean 4th floor hallway",
-        "Clean 4th floor powder room → check all of them",
-        "Clean gym room; disinfect, organize",
-        "Assist with family lunch",
-        "Clean Mr. Stewart’s office",
-        "Collect kitchen garbage",
-        "Sweep outside every morning",
-        "Clean garden; blow leaves",
-        "Clean and organize furniture by the garden; cover it all if raining",
-        "Walk the dogs (Saturday or Sunday)",
-        "Clean bathroom on kitchen floor",
-        "Help put away laundry when ready",
-        "Change water for dogs",
-        "Clean, organize Caddy and make sure all cleaning tools are put back in right places and handheld vacuum filter is clean and in place."
-      ],
-      "Evening": [
-        "Ensure lights are on their evening setting around 5:30/6pm",
-        "Clean parlor level hallway",
-        "Clean dining room",
-        "Clean living room",
-        "Clean pantry and stairways on parlor level",
-        "Clean 138 entryway",
-        "Clean parlor level powder room",
-        "Clean balcony if needed",
-        "Turn down the kids’ rooms after nap (usually after 4pm)",
-        "Turn down, clean & refresh all bathrooms",
-        "Set dinner table for kids",
-        "Assist with family dinner",
-        "Clean guest room on kitchen floor",
-        "Feed cat and dogs",
-        "Walk dogs",
-        "Collect garbage (collect g. on sheet for sign days)",
-        "Bring clean laundry to the rooms",
-        "Check laundry room to ensure nothing is left",
-        "Refill fridge and ensure drinks are fully stocked",
-        "Empty cat/dog kitchen soup tray",
-        "Clean kitchen, pantry and mudroom for the day",
-        "Clear family room & check guest room apartment",
-        "Dispose of all garbage (Tue: trash/large items; Thu: trash/recycle/compost; Sat: trash/large items)",
-        "Clean, organize Caddy and make sure all cleaning tools are put back in right places and handheld vacuum filter is clean and in place."
-      ]
-    };
+  // === DOM HOOKS ===
+  const els = {
+    title: document.getElementById("title"),
+    housekeeper: document.getElementById("housekeeper"),
+    shift: document.getElementById("shift"),
+    date: document.getElementById("date"),
+    hint: document.getElementById("hint"),
+    tasks: document.getElementById("tasks"),
+    submit: document.getElementById("submit"),
+    clear: document.getElementById("clear"),
+    tabForm: document.getElementById("tabForm"),
+    tabMgr: document.getElementById("tabMgr"),
+    panelForm: document.getElementById("panelForm"),
+    panelMgr: document.getElementById("panelMgr"),
+    mgrRows: document.getElementById("mgrRows"),
+  };
 
-    // ---------- UI Build ----------
-    const legend = document.getElementById("legend");
-    legend.innerHTML = HOUSEKEEPERS.map(h => (
-      `<div class="chip"><span class="dot" style="background:${h.color}"></span>${h.name}</div>`
-    )).join("");
+  // === INIT PAGE ===
+  function fillSelects() {
+    // title + date
+    if (els.title) els.title.textContent = SITE_TITLE;
+    if (els.date) els.date.valueAsNumber = Date.now() - (new Date()).getTimezoneOffset()*60000;
 
-    const hkSel = document.getElementById("housekeeper");
-    hkSel.innerHTML = `<option value="">Select Housekeeper</option>` +
-      HOUSEKEEPERS.map(h => `<option>${h.name}</option>`).join("");
-
-    const shiftSel = document.getElementById("shift");
-    shiftSel.innerHTML = ["Morning","Middle","Evening"].map(s => `<option>${s}</option>`).join("");
-
-    const dateEl = document.getElementById("date");
-    dateEl.value = new Date().toISOString().slice(0,10);
-
-    const tasksWrap = document.getElementById("tasksWrap");
-    function renderTasks() {
-      const s = shiftSel.value;
-      tasksWrap.innerHTML = SHIFT_TASKS[s].map((t,i) => `
-        <label class="task">
-          <input type="checkbox" data-task="${t.replace(/"/g,'&quot;')}" />
-          <span>${t}</span>
-        </label>`).join("");
+    // housekeepers
+    if (els.housekeeper) {
+      els.housekeeper.innerHTML = "";
+      HOUSEKEEPERS.forEach(n => {
+        const o = document.createElement("option");
+        o.value = n; o.textContent = n;
+        els.housekeeper.appendChild(o);
+      });
     }
-    shiftSel.addEventListener("change", renderTasks);
+
+    // shifts
+    if (els.shift) {
+      els.shift.innerHTML = "";
+      SHIFTS.forEach(s => {
+        const o = document.createElement("option");
+        o.value = s.value; o.textContent = s.label;
+        els.shift.appendChild(o);
+      });
+    }
+  }
+
+  function renderTasks() {
+    if (!els.tasks || !els.hint || !els.shift) return;
+    const s = els.shift.value;
+    els.tasks.innerHTML = '';
+    if (!s) {
+      els.hint.className = 'hint';
+      els.hint.textContent = "Please select a shift to see the tasks";
+      return;
+    }
+    const list = SHIFT_TASKS[s] || [];
+    els.hint.className = 'hint sectionTitle';
+    const found = SHIFTS.find(x => x.value === s);
+    els.hint.textContent = (found ? found.label.split("—")[0] : s).toUpperCase();
+    list.forEach((t,i)=>{
+      const row = document.createElement('label');
+      row.className = 'task';
+      row.innerHTML = `<input type="checkbox" data-i="${i}"/> <span>${t}</span>`;
+      els.tasks.appendChild(row);
+    });
+  }
+
+  // === SUBMIT HANDLER (writes A:H) ===
+  async function handleSubmit() {
+    const items = (SHIFT_TASKS[els.shift.value] || []);
+    const checks = Array.from(els.tasks.querySelectorAll('input[type=checkbox]'));
+    const incomplete = items.filter((_,i)=> !checks[i]?.checked);
+    const payload = {
+      date: els.date.value,
+      housekeeper: els.housekeeper.value,
+      shift: els.shift.value,
+      completedCount: items.length - incomplete.length,
+      totalTasks: items.length,
+      completionRate: items.length ? Math.round(((items.length - incomplete.length) / items.length) * 100) : 0,
+      submittedAt: new Date().toISOString(),
+      incompleteList: incomplete   // backend accepts incompleteList or incomplete
+    };
+    const res = await fetch(FUNCTION_URL, {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      alert("Submitted!");
+      loadManager();
+    } else {
+      alert("Submit failed");
+    }
+  }
+
+  // === MANAGER DASHBOARD LOADER ===
+  async function loadManager() {
+    if (!els.mgrRows) return;
+    els.mgrRows.innerHTML = `<tr><td colspan="8">Loading…</td></tr>`;
+    try {
+      const r = await fetch(FUNCTION_URL);
+      const data = await r.json();
+      const rows = Array.isArray(data) ? data : (data.submissions || []);
+      if (!rows.length) {
+        els.mgrRows.innerHTML = `<tr><td colspan="8">No rows</td></tr>`;
+        return;
+      }
+      const html = rows.map(s => `
+        <tr>
+          <td>${s.date || ""}</td>
+          <td>${s.housekeeper || ""}</td>
+          <td>${s.shift || ""}</td>
+          <td>${s.completedCount ?? ""}</td>
+          <td>${s.totalTasks ?? ""}</td>
+          <td>${s.completionRate === "" ? "" : `${s.completionRate}%`}</td>
+          <td>${(s.submittedAt || "").replace("T"," ").replace("Z","")}</td>
+          <td>${
+            Array.isArray(s.incompleteList)
+              ? s.incompleteList.join(", ")
+              : (s.incompleteList || s.incomplete || "")
+          }</td>
+        </tr>
+      `).join("");
+      els.mgrRows.innerHTML = html;
+    } catch (e) {
+      els.mgrRows.innerHTML = `<tr><td colspan="8">Error: ${e.message}</td></tr>`;
+    }
+  }
+
+  // === WIRE UP EVENTS ===
+  document.addEventListener('DOMContentLoaded', () => {
+    fillSelects();
     renderTasks();
+  });
+  els.shift?.addEventListener('change', renderTasks);
+  els.clear?.addEventListener('click', () => {
+    els.tasks?.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+  });
+  els.submit?.addEventListener('click', handleSubmit);
+  els.tabMgr?.addEventListener('click', loadManager);
 
-    document.getElementById("clearBtn").onclick = () => {
-      tasksWrap.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-    };
+  // expose if you need it
+  window.loadManager = loadManager;
+})();
+</script>
 
-    // Tabs
-    const formTab = document.getElementById("formTab");
-    const dashTab = document.getElementById("dashTab");
-    const tabForm = document.getElementById("tab-form");
-    const tabDash = document.getElementById("tab-dash");
-
-    tabForm.onclick = () => {
-      tabForm.classList.add("active"); tabDash.classList.remove("active");
-      formTab.classList.remove("hidden"); dashTab.classList.add("hidden");
-    };
-    tabDash.onclick = async () => {
-      tabDash.classList.add("active"); tabForm.classList.remove("active");
-      formTab.classList.add("hidden"); dashTab.classList.remove("hidden");
-      await loadDashboard();
-    };
-
-    // Submit
-    const fnURL = "/.netlify/functions/submissions";
-    document.getElementById("submitBtn").onclick = async () => {
-      const housekeeper = hkSel.value || "";
-      const shift = shiftSel.value;
-      const date = dateEl.value;
-      const all = Array.from(tasksWrap.querySelectorAll('input[type="checkbox"]'));
-      const completed = all.filter(cb => cb.checked).map(cb => cb.dataset.task);
-      const incomplete = all.filter(cb => !cb.checked).map(cb => cb.dataset.task);
-      const completedCount = completed.length;
-      const totalTasks = all.length;
-      const completionRate = totalTasks ? completedCount / totalTasks : 0;
-
-      if (!housekeeper) { alert("Please select a housekeeper."); return; }
-
-      const payload = {
-        date,
-        housekeeper,
-        shift,
-        completedCount,
-        totalTasks,
-        completionRate,
-        submittedAt: new Date().toISOString(),
-        incomplete
-      };
-
-      try {
-        const res = await fetch(fnURL, {
-          method:"POST",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Save error");
-        alert("Saved!");
-      } catch (e) {
-        alert("Could not save: " + e.message);
-      }
-    };
-
-    // Dashboard
-    async function loadDashboard(){
-      const tbody = document.querySelector("#dashTable tbody");
-      tbody.innerHTML = `<tr><td colspan="8">Loading…</td></tr>`;
-      try{
-        const res = await fetch(fnURL);
-        const data = await res.json();
-        const rows = data.rows || [];
-        if (!rows.length) { tbody.innerHTML = `<tr><td colspan="8">No rows</td></tr>`; return; }
-        tbody.innerHTML = rows.map(r => `
-          <tr>
-            <td>${r["Date"] || ""}</td>
-            <td>${r["Housekeeper"] || ""}</td>
-            <td>${r["Shift"] || ""}</td>
-            <td>${r["Completed Tasks"] || r["completedCount"] || ""}</td>
-            <td>${r["Total Tasks"] || r["totalTasks"] || ""}</td>
-            <td>${Number(r["Completion Rate"] || r["completionRate"] || 0).toFixed(2)}</td>
-            <td class="small">${r["Submitted At"] || r["submittedAt"] || ""}</td>
-            <td>${(r["Incomplete Tasks"] || r["incompleteList"] || "").replace(/\n/g,"<br>")}</td>
-          </tr>`).join("");
-      }catch(e){
-        tbody.innerHTML = `<tr><td colspan="8">Error: ${e.message}</td></tr>`;
-      }
-    }
- <script>
 (function () {
   // Your function URL (works for Netlify functions)
   const FUNCTION_URL = "/.netlify/functions/submissions";
