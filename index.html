@@ -15,22 +15,27 @@
     .tab{padding:10px 16px;border-radius:999px;border:1px solid #d1d5db;background:#f8fafc;cursor:pointer}
     .tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
     main{padding:22px}
+
     .row{display:flex;gap:14px;flex-wrap:wrap}
     .field{flex:1 1 260px;display:flex;flex-direction:column;gap:6px}
     .label{font-size:12px;color:#334155;font-weight:600}
     select,input[type=date]{height:38px;padding:0 10px;border:1px solid #d1d5db;border-radius:8px}
+
     .hint{margin:18px 0 8px;color:#64748b;text-align:center}
     .sectionTitle{margin:14px 0 8px;padding:12px 16px;background:#eef2ff;border-left:4px solid var(--brand);font-weight:700;letter-spacing:.03em}
     .tasks{display:flex;flex-direction:column;gap:10px}
     .task{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #e5e7eb;border-radius:10px;background:#fff}
+
     .actions{display:flex;gap:10px;justify-content:center;margin:18px 0}
     .btn{padding:10px 14px;border-radius:8px;border:1px solid #d1d5db;background:#2563eb;color:#fff;font-weight:700;cursor:pointer}
     .btn.secondary{background:#e5e7eb;color:#111827}
+
     .success{display:none;margin:14px auto 0;max-width:680px;background:#dcfce7;border:1px solid #86efac;color:#14532d;padding:10px 14px;border-radius:8px;text-align:center}
+    .muted{color:#6b7280}
+
     table{width:100%;border-collapse:collapse;margin-top:12px}
     thead th{font-weight:700;text-align:left;padding:12px;border-bottom:1px solid #e5e7eb}
     tbody td{padding:10px;border-bottom:1px solid #f0f2f5}
-    .muted{color:#6b7280}
   </style>
 </head>
 <body>
@@ -111,7 +116,7 @@
   (function () {
     // ========= CONFIG (edit these) =========
     const SITE_TITLE = "140 W 11th – Housekeeping Task Tracker";
-    const FUNCTION_URL = "/.netlify/functions/submissions";   // Netlify function
+    const FUNCTION_URL = "/.netlify/functions/submissions";   // Netlify function path
     const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1-2paA8-qALzx1QKVe4S37im_HtL7TWn4yiheIT5AygM/edit?gid=0#gid=0"; // 
 
     const HOUSEKEEPERS = ["JACKY","KUNGA","LORENA","HEIDI","ANA","IRMA","AGNES","ANITA"];
@@ -270,7 +275,6 @@
       });
     }
     els.shift.addEventListener("change", renderTasks);
-    renderTasks();
 
     // ========= Clear checks =========
     els.clear.addEventListener("click", ()=>{
@@ -279,7 +283,6 @@
 
     // ========= Submit (writes A:H) + auto-reset =========
     function resetForm() {
-      // select placeholders again
       if (els.housekeeper) els.housekeeper.value = "";
       if (els.shift) { els.shift.value = ""; els.tasks.innerHTML = ""; }
       if (els.hint) { els.hint.className="hint"; els.hint.textContent="Please select a shift to see the tasks"; }
@@ -287,12 +290,12 @@
       els.housekeeper?.focus();
     }
 
-    els.submit.addEventListener("click", async ()=>{
+    els.submit.addEventListener("click", async () => {
       if (!els.housekeeper.value || !els.shift.value) { alert("Pick a housekeeper and a shift first."); return; }
 
-      const items = SHIFT_TASKS[els.shift.value] || [];
+      const items  = SHIFT_TASKS[els.shift.value] || [];
       const checks = Array.from(els.tasks.querySelectorAll('input[type=checkbox]'));
-      const incomplete = items.filter((_,i)=>!checks[i]?.checked);
+      const incomplete = items.filter((_, i) => !checks[i]?.checked);
 
       const payload = {
         date: els.date.value,
@@ -300,17 +303,21 @@
         shift: els.shift.value,
         completedCount: items.length - incomplete.length,
         totalTasks: items.length,
-        completionRate: items.length ? Math.round(((items.length - incomplete.length)/items.length)*100) : 0,
+        completionRate: items.length ? Math.round(((items.length - incomplete.length) / items.length) * 100) : 0,
         submittedAt: new Date().toISOString(),
         incompleteList: incomplete
       };
 
-      const res = await fetch(FUNCTION_URL, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(payload) });
+      const res = await fetch(FUNCTION_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
       if (res.ok) {
-        els.success.style.display = "block";
-        setTimeout(()=> els.success.style.display="none", 2000);
-        resetForm();     // 👈 auto-reset here
-        loadManager();   // refresh dashboard
+        if (els.success) { els.success.style.display = "block"; setTimeout(()=> els.success.style.display="none", 2000); }
+        resetForm();   // auto-clear form
+        loadManager(); // refresh dashboard
       } else {
         alert("Submit failed");
       }
@@ -364,6 +371,9 @@
       els.panelMgr.style.display="block"; els.panelForm.style.display="none";
       loadManager();
     });
+
+    // final init
+    renderTasks(); // will show hint until a shift is chosen
   })();
   </script>
 </body>
