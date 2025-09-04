@@ -5,24 +5,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Housekeeping Task Tracker</title>
   <style>
-    :root{
-      --bg:#1e2a5a; --card:#fff; --ink:#0f172a; --muted:#6b7280; --line:#e5e7eb;
-      --brand:#2563eb; --ok:#16a34a; --warn:#f59e0b; --bad:#ef4444;
-    }
+    :root{--bg:#1e2a5a;--card:#fff;--ink:#0f172a;--muted:#6b7280;--line:#e5e7eb;--brand:#2563eb}
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;padding:24px}
+    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,Inter,Segoe UI,Roboto,Arial,sans-serif;padding:24px}
     .wrap{max-width:1100px;margin:0 auto;background:var(--card);border-radius:16px;box-shadow:0 20px 40px rgba(2,6,23,.25);overflow:hidden}
-    header{padding:28px;border-bottom:1px solid var(--line);background:linear-gradient(#243042,#243042) top/100% 140px no-repeat}
-    h1{margin:0;color:#fff;font-weight:800;letter-spacing:.02em;text-align:center}
-    .subtitle{color:#d1d5db;text-align:center;margin-top:6px}
-    nav{display:flex;justify-content:center;gap:12px;margin-top:16px}
-    .tab{padding:10px 16px;border-radius:999px;border:1px solid #3b4250;background:#3b4250;color:#cbd5e1;cursor:pointer}
-    .tab.active{background:#60a5fa;border-color:#60a5fa;color:#062945;font-weight:700}
+    header{padding:24px;border-bottom:1px solid var(--line)}
+    h1{margin:0;text-align:center}
+    nav{display:flex;justify-content:center;gap:12px;margin-top:12px}
+    .tab{padding:10px 16px;border-radius:999px;border:1px solid #d1d5db;background:#f8fafc;cursor:pointer}
+    .tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
     main{padding:22px}
-
-    /* form layout */
     .row{display:flex;gap:14px;flex-wrap:wrap}
-    .field{flex:1 1 280px;display:flex;flex-direction:column;gap:6px}
+    .field{flex:1 1 260px;display:flex;flex-direction:column;gap:6px}
     .label{font-size:12px;color:#334155;font-weight:600}
     select,input[type=date]{height:38px;padding:0 10px;border:1px solid #d1d5db;border-radius:8px}
     .hint{margin:18px 0 8px;color:#64748b;text-align:center}
@@ -33,25 +27,16 @@
     .btn{padding:10px 14px;border-radius:8px;border:1px solid #d1d5db;background:#2563eb;color:#fff;font-weight:700;cursor:pointer}
     .btn.secondary{background:#e5e7eb;color:#111827}
     .success{display:none;margin:14px auto 0;max-width:680px;background:#dcfce7;border:1px solid #86efac;color:#14532d;padding:10px 14px;border-radius:8px;text-align:center}
-
-    /* manager */
-    .toolbar{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:10px 0 20px}
-    .btn-link{padding:8px 12px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:8px;cursor:pointer}
-    .cards{display:flex;flex-direction:column;gap:12px}
-    .card{border:1px solid #e5e7eb;border-left-width:6px;border-radius:12px;padding:12px 14px;background:#fff}
-    .card .top{display:flex;justify-content:space-between;gap:10px}
-    .badge{font-weight:800;padding:6px 10px;border-radius:999px;color:#fff}
-    .b-ok{background:var(--ok)} .b-warn{background:var(--warn)} .b-bad{background:var(--bad)}
-    details{margin-top:6px}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    thead th{font-weight:700;text-align:left;padding:12px;border-bottom:1px solid #e5e7eb}
+    tbody td{padding:10px;border-bottom:1px solid #f0f2f5}
     .muted{color:#6b7280}
-    @media (max-width:640px){ header{padding:20px} }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <h1 id="title">Housekeeping Task Tracker</h1>
-      <div class="subtitle">CHESTERMAN GROUP CORP — Housekeeping Task Tracker 2025</div>
       <nav>
         <button id="tabForm" class="tab active">Housekeeper Form</button>
         <button id="tabMgr" class="tab">Manager Dashboard</button>
@@ -59,7 +44,7 @@
     </header>
 
     <main>
-      <!-- ================= Housekeeper Form ================= -->
+      <!-- ============== Housekeeper Form ============== -->
       <section id="panelForm">
         <div class="row">
           <div class="field">
@@ -89,14 +74,14 @@
         </div>
       </section>
 
-      <!-- ================= Manager Dashboard ================= -->
+      <!-- ============== Manager Dashboard ============== -->
       <section id="panelMgr" style="display:none">
-        <div class="toolbar">
-          <div class="field" style="flex:1 1 200px">
+        <div class="row" style="align-items:flex-end;margin-bottom:8px">
+          <div class="field">
             <label class="label">Housekeeper</label>
             <select id="filterKeeper"><option value="">All Housekeepers</option></select>
           </div>
-          <div class="field" style="flex:1 1 200px">
+          <div class="field">
             <label class="label">Shift</label>
             <select id="filterShift">
               <option value="">All Shifts</option>
@@ -105,124 +90,117 @@
               <option value="evening">Evening</option>
             </select>
           </div>
-          <div class="field" style="flex:1 1 160px">
+          <div class="field">
             <label class="label">Date</label>
             <input id="filterDate" type="date"/>
           </div>
-          <button id="openSheet" class="btn-link" title="Open in Google Sheets">Open in Google Sheets</button>
-          <button id="clearFilters" class="btn-link">Clear Filters</button>
         </div>
-
-        <div id="cards" class="cards"><div class="muted">Loading…</div></div>
+        <table>
+          <thead>
+            <tr>
+              <th>DATE</th><th>HOUSEKEEPER</th><th>SHIFT</th><th>COMPLETED</th><th>TOTAL</th><th>RATE</th><th>SUBMITTED</th><th>INCOMPLETE TASKS</th>
+            </tr>
+          </thead>
+          <tbody id="mgrRows"><tr><td colspan="8" class="muted">Loading…</td></tr></tbody>
+        </table>
       </section>
     </main>
   </div>
 
   <script>
   (function () {
-    // ======== CONFIG (edit these for each property) ========
+    // ========= CONFIG (edit these) =========
     const SITE_TITLE = "140 W 11th – Housekeeping Task Tracker";
-    const FUNCTION_URL = "/.netlify/functions/submissions"; // Netlify function path
-    const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1-2paA8-qALzx1QKVe4S37im_HtL7TWn4yiheIT5AygM/edit?gid=0#gid=0"
+    const FUNCTION_URL = "/.netlify/functions/submissions";   // Netlify function
+    const GOOGLE_SHEET_URL = ""; // optional; paste sheet URL if you want an "Open in Sheets" button
 
     const HOUSEKEEPERS = ["JACKY","KUNGA","LORENA","HEIDI","ANA","IRMA","AGNES","ANITA"];
+
     const SHIFTS = [
-      { value:"morning", label:"Morning Shift — 7:30 am" },
-      { value:"middle",  label:"Middle Shift — 1:00 pm" },
-      { value:"evening", label:"Evening Shift — 5:00 pm" },
+      { value: "morning", label: "MORNING SHIFT 🌇 — 7:30 am" },
+      { value: "middle",  label: "MIDDLE SHIFT 🏙️ — 10:30/11:00 am" },
+      { value: "evening", label: "EVENING SHIFT 🌃 — 12:00 pm" },
     ];
-    // One-column form: list items under each shift (customize!)
-    // Replace your SHIFTS with this
-const SHIFTS = [
-  { value: "morning", label: "MORNING SHIFT 🌇 — 7:30 am" },
-  { value: "middle",  label: "MIDDLE SHIFT 🏙️ — 10:30/11:00 am" },
-  { value: "evening", label: "EVENING SHIFT 🌃 — 12:00 pm" },
-];
 
-// Replace your SHIFT_TASKS with this
-const SHIFT_TASKS = {
-  morning: [
-    "Turn lights on (or off exteriors)",
-    "Check Mrs. Office; fresh water in Owala stainless steel bottle",
-    "Set the table for kids’ breakfast",
-    "Empty dishwashers",
-    "Walk the dogs then feed",
-    "Check dining room from night prior",
-    "Do a quick quiet walk through the house to clean anything from the day before",
-    "Flowers → Add water or change (task for 2 people)",
-    "Assist with family breakfast and any additional needs",
-    "Clean up after breakfast",
-    "Receive and display packages",
-    "Check bathroom on kitchen floor",
-    "Clean Oli's room/bathroom",
-    "Clean Frankie's room/bathroom",
-    "Clean Sonnet's room → if available, if not falls on evening shift",
-    "Collect laundry → bring to laundry room",
-    "Clean Master if available, if not falls to middle shift",
-    "Clean kids’ lounge/snug room",
-    "Clean kids’ 3rd floor hallways",
-    "Clean kids’ room; organize closets"
-  ],
+    const SHIFT_TASKS = {
+      morning: [
+        "Turn lights on (or off exteriors)",
+        "Check Mrs. Office; fresh water in Owala stainless steel bottle",
+        "Set the table for kids’ breakfast",
+        "Empty dishwashers",
+        "Walk the dogs then feed",
+        "Check dining room from night prior",
+        "Do a quick quiet walk through the house to clean anything from the day before",
+        "Flowers → Add water or change (task for 2 people)",
+        "Assist with family breakfast and any additional needs",
+        "Clean up after breakfast",
+        "Receive and display packages",
+        "Check bathroom on kitchen floor",
+        "Clean Oli's room/bathroom",
+        "Clean Frankie's room/bathroom",
+        "Clean Sonnet's room → if available, if not falls on evening shift",
+        "Collect laundry → bring to laundry room",
+        "Clean Master if available, if not falls to middle shift",
+        "Clean kids’ lounge/snug room",
+        "Clean kids’ 3rd floor hallways",
+        "Clean kids’ room; organize closets"
+      ],
+      middle: [
+        "Set up kitchen for kids lunch (clean after)",
+        "Assist with cleaning Master or any rooms need attention",
+        "Assist with any packages or deliveries",
+        "Clean Master level hallway",
+        "Clean Sauna room/4th floor",
+        "Clean playroom if available",
+        "Clean 4th floor hallway",
+        "Clean 4th floor powder room → check all of them",
+        "Clean gym room; disinfect, organize",
+        "Assist with family lunch",
+        "Clean Mr. Stewart’s office",
+        "Collect kitchen garbage",
+        "Sweep outside every morning",
+        "Clean garden; blow leaves",
+        "Clean and organize furniture by the garden; cover it all if raining",
+        "Walk the dogs (Saturday or Sunday)",
+        "Clean bathroom on kitchen floor",
+        "Help put away laundry when ready",
+        "Change water for dogs"
+      ],
+      evening: [
+        "Ensure lights are on their evening setting around 5:30/6pm",
+        "Clean parlor level hallway",
+        "Clean dining room",
+        "Clean living room",
+        "Clean pantry and stairways on parlor level",
+        "Clean 138 entryway",
+        "Clean parlor level powder room",
+        "Clean balcony if needed",
+        "Turn down the kids’ rooms after nap (usually after 4pm)",
+        "Turn down, clean & refresh all bathrooms",
+        "Set dinner table for kids",
+        "Assist with family dinner",
+        "Clean guest room on kitchen floor",
+        "Feed cat and dogs",
+        "Walk dogs",
+        "Collect garbage (collect g. on sheet for sign days)",
+        "Bring clean laundry to the rooms",
+        "Check laundry room to ensure nothing is left",
+        "Refill fridge and ensure drinks are fully stocked",
+        "Empty cat/dog kitchen soup tray",
+        "Clean kitchen, pantry and mudroom for the day",
+        "Clear family room & check guest room apartment",
+        "Clean/organize cleaning caddy; make sure all cleaning tools are put back in right places and handheld vacuum filter is clean",
+        "Dispose of all garbage (Tuesday: trash and large items. Thursday: trash, recycling, composting. Saturday: trash and large items)"
+      ]
+    };
 
-  middle: [
-    "Set up kitchen for kids lunch (clean after)",
-    "Assist with cleaning Master or any rooms need attention",
-    "Assist with any packages or deliveries",
-    "Clean Master level hallway",
-    "Clean Sauna room/4th floor",
-    "Clean playroom if available",
-    "Clean 4th floor hallway",
-    "Clean 4th floor powder room → check all of them",
-    "Clean gym room; disinfect, organize",
-    "Assist with family lunch",
-    "Clean Mr. Stewart’s office",
-    "Collect kitchen garbage",
-    "Sweep outside every morning",
-    "Clean garden; blow leaves",
-    "Clean and organize furniture by the garden; cover it all if raining",
-    "Walk the dogs (Saturday or Sunday)",
-    "Clean bathroom on kitchen floor",
-    "Help put away laundry when ready",
-    "Change water for dogs"
-  ],
-
-  evening: [
-    "Ensure lights are on their evening setting around 5:30/6pm",
-    "Clean parlor level hallway",
-    "Clean dining room",
-    "Clean living room",
-    "Clean pantry and stairways on parlor level",
-    "Clean 138 entryway",
-    "Clean parlor level powder room",
-    "Clean balcony if needed",
-    "Turn down the kids’ rooms after nap (usually after 4pm)",
-    "Turn down, clean & refresh all bathrooms",
-    "Set dinner table for kids",
-    "Assist with family dinner",
-    "Clean guest room on kitchen floor",
-    "Feed cat and dogs",
-    "Walk dogs",
-    "Collect garbage (collect g. on sheet for sign days)",
-    "Bring clean laundry to the rooms",
-    "Check laundry room to ensure nothing is left",
-    "Refill fridge and ensure drinks are fully stocked",
-    "Empty cat/dog kitchen soup tray",
-    "Clean kitchen, pantry and mudroom for the day",
-    "Clear family room & check guest room apartment",
-    "Clean/organize cleaning caddy; make sure all cleaning tools are put back in right places and handheld vacuum filter is clean",
-    "Dispose of all garbage (Tuesday: trash and large items. Thursday: trash, recycling, composting. Saturday: trash and large items)"
-  ]
-};
-
-
-    // ======== DOM HOOKS ========
+    // ========= DOM =========
     const els = {
       title: document.getElementById("title"),
       tabForm: document.getElementById("tabForm"),
       tabMgr:  document.getElementById("tabMgr"),
       panelForm: document.getElementById("panelForm"),
       panelMgr:  document.getElementById("panelMgr"),
-
       housekeeper: document.getElementById("housekeeper"),
       shift: document.getElementById("shift"),
       date: document.getElementById("date"),
@@ -231,165 +209,159 @@ const SHIFT_TASKS = {
       submit: document.getElementById("submit"),
       clear: document.getElementById("clear"),
       success: document.getElementById("success"),
-
       filterKeeper: document.getElementById("filterKeeper"),
       filterShift: document.getElementById("filterShift"),
       filterDate: document.getElementById("filterDate"),
-      openSheet: document.getElementById("openSheet"),
-      clearFilters: document.getElementById("clearFilters"),
-      cards: document.getElementById("cards"),
+      mgrRows: document.getElementById("mgrRows"),
     };
 
-    // ======== INIT ========
-    els.title.textContent = SITE_TITLE;
-    els.date.valueAsNumber = Date.now() - (new Date()).getTimezoneOffset()*60000;
-
-    // fill selects
+    // ========= Init selects (with placeholders) =========
     function fillLists() {
+      els.title.textContent = SITE_TITLE;
+      els.date.valueAsNumber = Date.now() - (new Date()).getTimezoneOffset()*60000;
+
+      const addPlaceholder = (sel, text) => {
+        sel.innerHTML = "";
+        const p = document.createElement("option");
+        p.value = ""; p.textContent = text; p.disabled = true; p.selected = true;
+        sel.appendChild(p);
+      };
+
       if (els.housekeeper) {
-        els.housekeeper.innerHTML = "";
+        addPlaceholder(els.housekeeper, "Select Housekeeper");
         HOUSEKEEPERS.forEach(n => {
-          const o = document.createElement("option"); o.value = o.textContent = n;
+          const o = document.createElement("option");
+          o.value = n; o.textContent = n;
           els.housekeeper.appendChild(o);
         });
       }
       if (els.shift) {
-        els.shift.innerHTML = "";
+        addPlaceholder(els.shift, "Select Shift");
         SHIFTS.forEach(s => {
-          const o = document.createElement("option"); o.value = s.value; o.textContent = s.label;
+          const o = document.createElement("option");
+          o.value = s.value; o.textContent = s.label;
           els.shift.appendChild(o);
         });
       }
       if (els.filterKeeper) {
         els.filterKeeper.innerHTML = '<option value="">All Housekeepers</option>';
         HOUSEKEEPERS.forEach(n => {
-          const o = document.createElement("option"); o.value = o.textContent = n;
+          const o = document.createElement("option"); o.value = n; o.textContent = n;
           els.filterKeeper.appendChild(o);
         });
-      }
-      if (GOOGLE_SHEET_URL) {
-        els.openSheet.onclick = () => window.open(GOOGLE_SHEET_URL, "_blank");
-      } else {
-        els.openSheet.style.display = "none";
       }
     }
     fillLists();
 
-    // ======== FORM RENDERING ========
+    // ========= Render tasks for selected shift =========
     function renderTasks() {
       els.tasks.innerHTML = "";
       const s = els.shift.value;
-      if (!s) { els.hint.textContent = "Please select a shift to see the tasks"; els.hint.className = "hint"; return; }
+      if (!s) { els.hint.className="hint"; els.hint.textContent="Please select a shift to see the tasks"; return; }
       const items = SHIFT_TASKS[s] || [];
-      const found = SHIFTS.find(x => x.value === s);
-      els.hint.textContent = (found ? found.label.split("—")[0] : s).toUpperCase();
+      const label = (SHIFTS.find(x=>x.value===s)?.label || s).split("—")[0].trim();
       els.hint.className = "hint sectionTitle";
-      items.forEach((t, i) => {
+      els.hint.textContent = label.toUpperCase();
+      items.forEach((t,i)=>{
         const row = document.createElement("label");
-        row.className = "task";
-        row.innerHTML = `<input type="checkbox" data-i="${i}"> <span>${t}</span>`;
+        row.className="task";
+        row.innerHTML = `<input type="checkbox" data-i="${i}"/> <span>${t}</span>`;
         els.tasks.appendChild(row);
       });
     }
     els.shift.addEventListener("change", renderTasks);
     renderTasks();
 
-    els.clear.addEventListener("click", () => {
-      els.tasks.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+    // ========= Clear checks =========
+    els.clear.addEventListener("click", ()=>{
+      els.tasks.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked=false);
     });
 
-    // ======== SUBMIT (writes to A:H) ========
-    els.submit.addEventListener("click", async () => {
+    // ========= Submit (writes A:H) + auto-reset =========
+    function resetForm() {
+      // select placeholders again
+      if (els.housekeeper) els.housekeeper.value = "";
+      if (els.shift) { els.shift.value = ""; els.tasks.innerHTML = ""; }
+      if (els.hint) { els.hint.className="hint"; els.hint.textContent="Please select a shift to see the tasks"; }
+      if (els.date) els.date.valueAsNumber = Date.now() - (new Date()).getTimezoneOffset()*60000;
+      els.housekeeper?.focus();
+    }
+
+    els.submit.addEventListener("click", async ()=>{
+      if (!els.housekeeper.value || !els.shift.value) { alert("Pick a housekeeper and a shift first."); return; }
+
       const items = SHIFT_TASKS[els.shift.value] || [];
       const checks = Array.from(els.tasks.querySelectorAll('input[type=checkbox]'));
-      const incomplete = items.filter((_, i) => !checks[i]?.checked);
+      const incomplete = items.filter((_,i)=>!checks[i]?.checked);
+
       const payload = {
         date: els.date.value,
         housekeeper: els.housekeeper.value,
         shift: els.shift.value,
         completedCount: items.length - incomplete.length,
         totalTasks: items.length,
-        completionRate: items.length ? Math.round(((items.length - incomplete.length) / items.length) * 100) : 0,
+        completionRate: items.length ? Math.round(((items.length - incomplete.length)/items.length)*100) : 0,
         submittedAt: new Date().toISOString(),
-        incompleteList: incomplete     // backend accepts incompleteList or incomplete
+        incompleteList: incomplete
       };
+
       const res = await fetch(FUNCTION_URL, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(payload) });
       if (res.ok) {
         els.success.style.display = "block";
-        setTimeout(()=> els.success.style.display = "none", 2500);
-        loadManager(); // refresh dashboard
+        setTimeout(()=> els.success.style.display="none", 2000);
+        resetForm();     // 👈 auto-reset here
+        loadManager();   // refresh dashboard
       } else {
         alert("Submit failed");
       }
     });
 
-    // ======== MANAGER DASHBOARD ========
-    async function fetchSubmissions() {
-      const r = await fetch(FUNCTION_URL);
-      const payload = await r.json();
-      return Array.isArray(payload) ? payload : (payload.submissions || []);
-    }
-
-    function badgeClass(pct){
-      if (pct >= 90) return "b-ok";
-      if (pct >= 70) return "b-warn";
-      return "b-bad";
-    }
-
-    function passesFilters(row){
-      if (els.filterKeeper.value && row.housekeeper !== els.filterKeeper.value) return false;
-      if (els.filterShift.value && row.shift !== els.filterShift.value) return false;
-      if (els.filterDate.value && row.date !== els.filterDate.value) return false;
-      return true;
-    }
-
-    async function loadManager() {
-      els.cards.innerHTML = '<div class="muted">Loading…</div>';
+    // ========= Manager dashboard =========
+    async function loadManager(){
+      els.mgrRows.innerHTML = `<tr><td colspan="8" class="muted">Loading…</td></tr>`;
       try{
-        const rows = (await fetchSubmissions()).filter(passesFilters);
-        if (!rows.length) { els.cards.innerHTML = '<div class="muted">No rows</div>'; return; }
-        els.cards.innerHTML = rows.map(s => {
-          const pct = s.completionRate === "" ? "" : Number(s.completionRate);
-          const badge = pct === "" ? "" : `<span class="badge ${badgeClass(pct)}">${s.completedCount}/${s.totalTasks} tasks (${pct}%)</span>`;
-          const inc = Array.isArray(s.incompleteList) ? s.incompleteList
-                    : String(s.incompleteList || s.incomplete || "").split(/;\s*|,\s*/).filter(Boolean);
-          return `
-            <div class="card" style="border-left-color:#60a5fa">
-              <div class="top">
-                <div><b>${(s.housekeeper || "").toUpperCase()}</b> — ${(s.shift || "").toUpperCase()}<br>
-                  <span class="muted">Date: ${s.date || ""} • Submitted: ${(s.submittedAt || "").replace('T',' ').replace('Z','')}</span>
-                </div>
-                <div>${badge}</div>
-              </div>
-              <details>
-                <summary>View Incomplete Tasks</summary>
-                <ul style="margin:8px 0 0 18px">${inc.length ? inc.map(t=>`<li>${t}</li>`).join("") : "<li>None 🎉</li>"}</ul>
-              </details>
-            </div>
-          `;
-        }).join("");
+        const r = await fetch(FUNCTION_URL);
+        const payload = await r.json();
+        const rows = Array.isArray(payload) ? payload : (payload.submissions || []);
+        const filtered = rows.filter(s=>{
+          if (els.filterKeeper.value && s.housekeeper !== els.filterKeeper.value) return false;
+          if (els.filterShift.value && s.shift !== els.filterShift.value) return false;
+          if (els.filterDate.value && s.date !== els.filterDate.value) return false;
+          return true;
+        });
+        if (!filtered.length) { els.mgrRows.innerHTML = `<tr><td colspan="8" class="muted">No rows</td></tr>`; return; }
+        els.mgrRows.innerHTML = filtered.map(s=>`
+          <tr>
+            <td>${s.date||""}</td>
+            <td>${s.housekeeper||""}</td>
+            <td>${s.shift||""}</td>
+            <td>${s.completedCount??""}</td>
+            <td>${s.totalTasks??""}</td>
+            <td>${s.completionRate===""?"":`${s.completionRate}%`}</td>
+            <td>${(s.submittedAt||"").replace("T"," ").replace("Z","")}</td>
+            <td>${
+              Array.isArray(s.incompleteList)
+                ? s.incompleteList.join(", ")
+                : (s.incompleteList || s.incomplete || "")
+            }</td>
+          </tr>
+        `).join("");
       }catch(e){
-        els.cards.innerHTML = `<div class="muted">Error loading: ${e.message}</div>`;
+        els.mgrRows.innerHTML = `<tr><td colspan="8" class="muted">Error: ${e.message}</td></tr>`;
       }
     }
 
     // filters
-    els.clearFilters.addEventListener("click", ()=>{
-      els.filterKeeper.value = "";
-      els.filterShift.value = "";
-      els.filterDate.value = "";
-      loadManager();
-    });
-    [els.filterKeeper, els.filterShift, els.filterDate].forEach(el => el?.addEventListener("change", loadManager));
+    [els.filterKeeper, els.filterShift, els.filterDate].forEach(el=>el?.addEventListener("change", loadManager));
 
-    // tab switching
+    // tabs
     els.tabForm.addEventListener("click", ()=>{
       els.tabForm.classList.add("active"); els.tabMgr.classList.remove("active");
-      els.panelForm.style.display="block";  els.panelMgr.style.display="none";
+      els.panelForm.style.display="block"; els.panelMgr.style.display="none";
     });
     els.tabMgr.addEventListener("click", ()=>{
       els.tabMgr.classList.add("active"); els.tabForm.classList.remove("active");
-      els.panelMgr.style.display="block";   els.panelForm.style.display="none";
+      els.panelMgr.style.display="block"; els.panelForm.style.display="none";
       loadManager();
     });
   })();
