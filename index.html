@@ -29,7 +29,9 @@
     .actions{display:flex;gap:10px;justify-content:center;margin:18px 0}
     .btn{padding:10px 14px;border-radius:8px;border:1px solid #d1d5db;background:#2563eb;color:#fff;font-weight:700;cursor:pointer}
     .btn.secondary{background:#e5e7eb;color:#111827}
+    .btn.link{background:#f8fafc;color:#0f172a}
 
+    .hidden{display:none}
     .success{display:none;margin:14px auto 0;max-width:680px;background:#dcfce7;border:1px solid #86efac;color:#14532d;padding:10px 14px;border-radius:8px;text-align:center}
     .muted{color:#6b7280}
 
@@ -99,6 +101,8 @@
             <label class="label">Date</label>
             <input id="filterDate" type="date"/>
           </div>
+          <!-- Open sheet button -->
+          <button id="openSheet" class="btn link">Open in Google Sheets</button>
         </div>
         <table>
           <thead>
@@ -116,8 +120,9 @@
   (function () {
     // ========= CONFIG (edit these) =========
     const SITE_TITLE = "140 W 11th – Housekeeping Task Tracker";
-    const FUNCTION_URL = "/.netlify/functions/submissions";   // Netlify function path
-    const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1-2paA8-qALzx1QKVe4S37im_HtL7TWn4yiheIT5AygM/edit?gid=0#gid=0"; // 
+    const FUNCTION_URL = "/.netlify/functions/submissions";
+    // Paste your real Google Sheets URL between the quotes:
+    const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1-2paA8-qALzx1QKVe4S37im_HtL7TWn4yiheIT5AygM/edit?gid=0#gid=0";
 
     const HOUSEKEEPERS = ["JACKY","KUNGA","LORENA","HEIDI","ANA","IRMA","AGNES","ANITA"];
 
@@ -218,7 +223,12 @@
       filterShift: document.getElementById("filterShift"),
       filterDate: document.getElementById("filterDate"),
       mgrRows: document.getElementById("mgrRows"),
+      openSheet: document.getElementById("openSheet"),
     };
+
+    // Local time formatter for dashboard
+    const formatLocal = (iso) =>
+      iso ? new Date(iso).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : "";
 
     // ========= Init selects (with placeholders) =========
     function fillLists() {
@@ -254,6 +264,13 @@
           const o = document.createElement("option"); o.value = n; o.textContent = n;
           els.filterKeeper.appendChild(o);
         });
+      }
+
+      // Open sheet button
+      if (GOOGLE_SHEET_URL && els.openSheet) {
+        els.openSheet.addEventListener("click", () => window.open(GOOGLE_SHEET_URL, "_blank"));
+      } else {
+        els.openSheet?.classList.add("hidden");
       }
     }
     fillLists();
@@ -319,7 +336,8 @@
         resetForm();   // auto-clear form
         loadManager(); // refresh dashboard
       } else {
-        alert("Submit failed");
+        const msg = await res.text().catch(()=> "Submit failed");
+        alert(msg || "Submit failed");
       }
     });
 
@@ -345,7 +363,7 @@
             <td>${s.completedCount??""}</td>
             <td>${s.totalTasks??""}</td>
             <td>${s.completionRate===""?"":`${s.completionRate}%`}</td>
-            <td>${(s.submittedAt||"").replace("T"," ").replace("Z","")}</td>
+            <td>${formatLocal(s.submittedAt)}</td>
             <td>${
               Array.isArray(s.incompleteList)
                 ? s.incompleteList.join(", ")
@@ -373,7 +391,7 @@
     });
 
     // final init
-    renderTasks(); // will show hint until a shift is chosen
+    renderTasks(); // shows hint until a shift is chosen
   })();
   </script>
 </body>
