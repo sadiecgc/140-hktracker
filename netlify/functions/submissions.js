@@ -1,16 +1,11 @@
-// netlify/functions/submissions.js (SINGLE-COLUMN, CommonJS)
+// netlify/functions/submissions.js (MULTI-COLUMN, CommonJS)
 const { google } = require("googleapis");
-
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "Content-Type",
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
 };
-const respond = (s, d) => ({
-  statusCode: s,
-  headers: { "Content-Type": "application/json", ...CORS },
-  body: JSON.stringify(d),
-});
+const respond = (s, d) => ({ statusCode: s, headers: { "Content-Type": "application/json", ...CORS }, body: JSON.stringify(d) });
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: CORS, body: "" };
@@ -19,32 +14,49 @@ exports.handler = async (event) => {
     const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     const rawKey = process.env.GOOGLE_PRIVATE_KEY || "";
     const privateKey = rawKey.includes("\\n") ? rawKey.replace(/\\n/g, "\n") : rawKey;
-    const sheet = process.env.GOOGLE_SHEETS_ID;
-
-    if (!email || !privateKey || !sheet) return respond(500, { error: "Missing env vars" });
+    const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+    if (!email || !privateKey || !spreadsheetId) return respond(500, { error: "Missing env vars" });
 
     const auth = new google.auth.JWT(email, null, privateKey, ["https://www.googleapis.com/auth/spreadsheets"]);
     const sheets = google.sheets({ version: "v4", auth });
 
     if (event.httpMethod === "GET") {
-      const r = await sheets.spreadsheets.values.get({ spreadsheetId: sheet, range: "A2:A" });
-      const submissions = (r.data.values || []).map(v => {
-        try { return JSON.parse(v[0] ?? ""); } catch { return { raw: v[0] ?? "" }; }
+      const r = await sheets.spreadsheets.values.get({ spreadsheetId, range: "A2:H" });
+      const rows = r.data.values || [];
+      const headers = ["date","housekeeper","shift","completedCount","totalTasks","completionRate","submittedAt","incompleteList"];
+      const submissions = rows.map(row => {
+        const o = {}; headers.forEach((h,i)=>o[h] = row[i] ?? "");
+        o.completedCount = o.completedCount === "" ? "" : Number(o.completedCount);
+        o.totalTasks = o.totalTasks === "" ? "" : Number(o.totalTasks);
+        o.completionRate = o.completionRate === "" ? "" : Number(o.completionRate);
+        o.incompleteList = o.incompleteList ? String(o.incompleteList).split(/;\s*/) : [];
+        return o;
       });
       return respond(200, { submissions });
     }
 
     if (event.httpMethod === "POST") {
-      const data = JSON.parse(event.body || "{}");
-      if (typeof data.incompleteList === "string") data.incompleteList = data.incompleteList.split(/,\s*/).filter(Boolean);
-      if (!Array.isArray(data.incompleteList)) data.incompleteList = [];
-      if (!data.submittedAt) data.submittedAt = new Date().toISOString();
+      const body = JSON.parse(event.body || "{}");
+      const incomplete = Array.isArray(body.incompleteList)
+        ? body.incompleteList
+        : (typeof body.incompleteList === "string" ? body.incompleteList.split(/,\s*/) : []);
+      const completedCount = Number(body.completedCount ?? 0);
+      const totalTasks = Number(body.totalTasks ?? 0);
+      const completionRate = totalTasks ? Math.round((completedCount / totalTasks) * 100) : 0;
+
+      const row = [
+        body.date || "",
+        body.housekeeper || "",
+        body.shift || "",
+        String(completedCount),
+        String(totalTasks),
+        String(completionRate),
+        body.submittedAt || new Date().toISOString(),
+        incomplete.join("; ")
+      ];
 
       await sheets.spreadsheets.values.append({
-        spreadsheetId: sheet,
-        range: "A:A",
-        valueInputOption: "RAW",
-        requestBody: { values: [[JSON.stringify(data)]] }
+        spreadsheetId, range: "A:H", valueInputOption: "USER_ENTERED", requestBody: { values: [row] }
       });
 
       return respond(200, { ok: true });
